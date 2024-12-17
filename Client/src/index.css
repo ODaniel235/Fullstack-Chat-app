@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --transition-duration: 0.3s;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden;
+  }
+
+  * {
+    overflow-x: hidden;
+    transition: background-color var(--transition-duration),
+      border-color var(--transition-duration), color var(--transition-duration);
+  }
+}
