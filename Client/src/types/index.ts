@@ -1,4 +1,5 @@
 export interface User {
+  
   id: string;
   name: string;
   avatar: string;
@@ -11,7 +12,7 @@ export interface User {
     showOnlineStatus: boolean;
     readReceipts: boolean;
     profilePhotoVisibility: "everyone" | "nobody" | "custom";
-    excludedUsers?: string[];
+    blockedUsers?: string[];
   };
   twoFactorEnabled?: boolean;
 }

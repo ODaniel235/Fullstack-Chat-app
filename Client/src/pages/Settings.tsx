@@ -5,9 +5,10 @@ import { Shield, User, Palette, Lock, Camera, Upload } from "lucide-react";
 import { OTPModal } from "../components/modals/OTPModal";
 import { ChangePasswordModal } from "../components/modals/ChangePasswordModal";
 import { use } from "framer-motion/client";
+import useAuthStore from "@/store/useAuthStore";
 
 export const Settings: React.FC = () => {
-  const { currentUser, updateUser } = useStore();
+  const { userData } = useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [basics, setBasics] = useState({
@@ -97,7 +98,7 @@ export const Settings: React.FC = () => {
               >
                 <img
                   src={
-                    currentUser?.avatar ||
+                    userData?.avatar ||
                     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
                   }
                   alt="Profile"
@@ -189,14 +190,22 @@ export const Settings: React.FC = () => {
           <div className="flex items-center justify-between">
             <span>Show Online Status</span>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" />
+              <input
+                type="checkbox"
+                checked={userData?.privacySettings?.showOnlineStatus}
+                className="sr-only peer"
+              />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
           </div>
           <div className="flex items-center justify-between">
             <span>Read Receipts</span>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" />
+              <input
+                type="checkbox"
+                checked={userData?.privacySettings?.readReceipts}
+                className="sr-only peer"
+              />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
           </div>
@@ -207,7 +216,6 @@ export const Settings: React.FC = () => {
             <select className="w-full p-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600">
               <option value="everyone">Everyone</option>
               <option value="nobody">Nobody</option>
-              <option value="custom">Custom</option>
             </select>
           </div>
         </div>
@@ -228,7 +236,7 @@ export const Settings: React.FC = () => {
           </button>
           <div className="flex items-center justify-between px-4 py-2">
             <span>Two-Step Verification</span>
-            {twoFactorEnabled ? (
+            {userData?.twoFactorEnabled ? (
               <button
                 onClick={() => handleOTPAction("twoFactor")}
                 className="text-red-500 hover:text-red-600"
@@ -257,7 +265,7 @@ export const Settings: React.FC = () => {
         <OTPModal
           isOpen={showOTPModal}
           onClose={() => setShowOTPModal(false)}
-          action={otpAction}/* 
+          action={otpAction} /* 
           onVerified={handleOTPVerified} */
         />
       )}

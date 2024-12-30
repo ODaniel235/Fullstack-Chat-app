@@ -1,0 +1,13 @@
+{
+  "name": "fullblown-chatapp",
+  "version": "1.0.0",
+  "main": "Server/server.js",
+  "scripts": {
+    "dev": "pnpm --prefix Server run dev"
+  },
+  "author": "Omole Oluwadamilare Daniel",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+  }
+}

@@ -1,10 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useAuth0 } from "@auth0/auth0-react";
 import { Mail, MessageSquare } from "lucide-react";
-
+import axios from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
+import useAuthStore from "@/store/useAuthStore";
+import { useToast } from "@/hooks/use-toast";
+import Loading from "@/components/shared/Loader";
+import { useNavigate } from "react-router-dom";
 export const SignIn: React.FC = () => {
-  const { loginWithRedirect } = useAuth0();
+  const { toast } = useToast();
+  const { checkAuthInputs, login, isLoading } = useAuthStore();
+  const navigate = useNavigate();
+  const [data, setData] = useState({
+    email: "",
+    password: "",
+  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const error = await checkAuthInputs(data, "signin");
+    if (error) {
+      if (error.length > 1) {
+        toast({
+          title: "Error",
+          description: error[0],
+          variant: "destructive",
+        });
+        return;
+      } else {
+        toast({ title: "Error", description: error, variant: "destructive" });
+        return;
+      }
+    }
+    await login(data, navigate, toast);
+  };
+  const signin = useGoogleLogin({
+    onSuccess: async (res) => {
+      console.log("Token==>", res.access_token);
+      try {
+        const resp = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${res.access_token}`,
+            },
+          }
+        );
+        console.log("Decoded token info ==>", resp);
+        await login(
+          {
+            firstname: resp.data.given_name,
+            lastname: resp.data.family_name,
+            email: resp.data.email,
+            avatar: resp.data.picture,
+            type: "passwordless",
+          },
+          navigate,
+          toast
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  });
 
   return (
     <div className="min-h-screen flex">
@@ -50,7 +110,7 @@ export const SignIn: React.FC = () => {
           </p>
 
           <button
-            onClick={() => loginWithRedirect({ connection: "google-oauth2" })}
+            onClick={() => signin()}
             className="w-full flex items-center justify-center px-4 py-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 mb-6 transition-colors"
           >
             <Mail className="w-5 h-5 mr-3" />
@@ -68,11 +128,14 @@ export const SignIn: React.FC = () => {
             </div>
           </div>
 
-          <form className="space-y-4">
+          <form onSubmit={handleSignin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
+                name="email"
+                onChange={handleChange}
+                value={data.email}
                 className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter your email"
               />
@@ -82,6 +145,9 @@ export const SignIn: React.FC = () => {
               <label className="block text-sm font-medium mb-1">Password</label>
               <input
                 type="password"
+                name="password"
+                onChange={handleChange}
+                value={data.password}
                 className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter your password"
               />
@@ -105,9 +171,10 @@ export const SignIn: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              disabled={isLoading}
+              className="w-full disabled:brightness-75 disabled:cursor-not-allowed disabled:hover:bg-indigo-600 flex justify-center items-center bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
             >
-              Sign in
+              {isLoading ? <Loading w={"w-[30%]"} color="white" /> : "Sign in"}
             </button>
           </form>
 

@@ -1,17 +1,34 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useStore } from "../store/useStore";
 import { sampleChats } from "../data/sampleData";
 import { formatDistanceToNow } from "../utils/dateUtils";
+import useChatStore from "@/store/useChatStore";
+import { useToast } from "@/hooks/use-toast";
+import useAuthStore from "@/store/useAuthStore";
 
 export const ChatList: React.FC = () => {
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const { setActiveChat } = useStore();
+  const chats = useChatStore((state) => state.chats);
 
+  const { setActiveChat } = useStore();
+  const { fetchConversation } = useChatStore();
+  const { userData } = useAuthStore();
+  useEffect(() => {
+    const fetchConvo = async () => {
+      await fetchConversation(toast);
+    };
+    fetchConvo();
+  }, []);
+  useEffect(() => {
+    console.log("Chats updated:", chats);
+  }, [chats]);
+  console.log("Chats==>", chats);
   const handleChatClick = (chatId: string) => {
     setActiveChat(chatId);
-    console.log(chatId)
+    console.log(chatId);
     navigate(`/chat/${chatId}`);
   };
 
@@ -30,15 +47,15 @@ export const ChatList: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {sampleChats.length > 0 ? (
+        {chats.length > 0 ? (
           <div className="divide-y dark:divide-gray-700">
-            {sampleChats.map((chat) => {
-              const otherParticipant = chat.participants.find(
-                (p) => p.id !== "1"
+            {chats.map((chat) => {
+              const otherParticipant = chat?.participants?.filter(
+                (p) => p.id !== userData.id
               );
-              const lastMessage = chat.messages[chat.messages.length - 1];
-
-
+              console.log("Participant==>", otherParticipant);
+              const lastMessage = chat.lastMessage;
+              console.log("Id===>", userData.id);
               return (
                 <motion.div
                   key={chat.id}
@@ -60,7 +77,7 @@ export const ChatList: React.FC = () => {
                           {otherParticipant?.name}
                         </h3>
                         <span className="text-sm text-gray-500">
-                          {formatDistanceToNow(chat.lastActivity)}
+                          {formatDistanceToNow(chat?.updatedAt)}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 truncate">

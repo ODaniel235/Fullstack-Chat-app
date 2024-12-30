@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum status {
+  online   @map("online")
+  offline  @map("offline")
+}
+enum Theme {
+    light   @map("light")
+    dark    @map("dark")
+    system  @map("system")
+  }
+model User{
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  name              String    
+  avatar            String
+  status            status
+  theme             Theme
+  email             String @unique
+  password          String?
+  phone             String?
+  location          String?
+  privacySettings   Json
+  twoFactorEnabled  Boolean   @default(false)
+  blockedUsers      String[]
+  conversations     Conversation[]
+  messages          Message[]
+}
+model Conversation {
+  id                String          @id @default(cuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  participantIds    String[]
+  participants      User[]
+  lastMessage       Json?
+  messages          Message[]
+}
+
+enum MessageType{
+  text    @map("text")
+  audio   @map("audio")
+  video   @map("video")
+}
+enum MessageStatus{
+  sent    @map("sent")
+  delivered @map("delivered")
+  read    @map("read")
+
+}
+model Message{
+  id         String        @id     @default(cuid())
+  senderId          String
+  conversationId    String   
+  conversation      Conversation    @relation(fields:[conversationId], references:[id])
+  sender            User            @relation(fields:[senderId], references:[id])
+  type              MessageType
+  content           String
+  status            MessageStatus   @default(sent)
+  isRead            Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+}
+enum statusType{
+    image   @map("image")
+    video   @map("video")
+    text    @map("text")
+  }
+  
+model Status{
+  userId              String    @id
+  poster              String
+  profilePicture      String
+  statuses            StatusData[]?
+}
+model StatusData{
+  id                    String      @id       @default(cuid())
+  userId                String
+  type                  statusType
+  content               String
+  timestamp             DateTime    @default(now())
+  views                 Int        @default(0)
+  likes                 Int        @default(0)
+  liked                 Boolean     @default(false)
+  backgroundColor       String?
+  user                  Status      @relation(fields:[userId], references:[userId])
+}

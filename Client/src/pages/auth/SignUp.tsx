@@ -1,11 +1,72 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useAuth0 } from "@auth0/auth0-react";
 import { Mail, MessageSquare } from "lucide-react";
-
+import { useGoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
+import useAuthStore from "@/store/useAuthStore";
+import Loading from "@/components/shared/Loader";
 export const SignUp: React.FC = () => {
-  const { loginWithRedirect } = useAuth0();
-
+  const navigate = useNavigate();
+  const [agreement, setAgreement] = useState(false);
+  const { toast } = useToast();
+  const { checkAuthInputs, signup, isLoading } = useAuthStore();
+  const [data, setData] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    password: "",
+  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  const handleSignup = async (
+    e: React.FormEvent<HTMLFormElement>,
+    type: string
+  ) => {
+    e.preventDefault();
+    const error = await checkAuthInputs(data);
+    if (error) {
+      if (error.length > 1) {
+        toast({
+          title: "Error",
+          description: error[0],
+          variant: "destructive",
+        });
+        return;
+      } else {
+        toast({ title: "Error", description: error, variant: "destructive" });
+        return;
+      }
+    }
+    await signup(data, navigate, toast);
+  };
+  const login = useGoogleLogin({
+    onSuccess: async (res) => {
+      console.log("Token==>", res.access_token);
+      try {
+        const resp = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${res.access_token}`,
+            },
+          }
+        );
+        console.log("Decoded token info ==>", resp);
+        signup({
+          firstname: resp.data.given_name,
+          lastname: resp.data.family_name,
+          email: resp.data.email,
+          avatar: resp.data.picture,
+          type: "passwordless",
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  });
   return (
     <div className="min-h-screen flex ">
       {/* Left Panel - Branding */}
@@ -50,12 +111,7 @@ export const SignUp: React.FC = () => {
           </p>
 
           <button
-            onClick={() =>
-              loginWithRedirect({
-                connection: "google-oauth2",
-                screen_hint: "signup",
-              })
-            }
+            onClick={() => login()}
             className="w-full flex items-center justify-center px-4 py-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 mb-6 transition-colors"
           >
             <Mail className="w-5 h-5 mr-3" />
@@ -73,7 +129,10 @@ export const SignUp: React.FC = () => {
             </div>
           </div>
 
-          <form className="space-y-4">
+          <form
+            onSubmit={(e) => handleSignup(e, "password")}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -82,6 +141,9 @@ export const SignUp: React.FC = () => {
                 <input
                   type="text"
                   className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  name="firstname"
+                  value={data.firstname}
+                  onChange={handleChange}
                   placeholder="Enter first name"
                 />
               </div>
@@ -92,6 +154,9 @@ export const SignUp: React.FC = () => {
                 <input
                   type="text"
                   className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  name="lastname"
+                  value={data.lastname}
+                  onChange={handleChange}
                   placeholder="Enter last name"
                 />
               </div>
@@ -102,6 +167,9 @@ export const SignUp: React.FC = () => {
               <input
                 type="email"
                 className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                name="email"
+                value={data.email}
+                onChange={handleChange}
                 placeholder="Enter your email"
               />
             </div>
@@ -111,12 +179,16 @@ export const SignUp: React.FC = () => {
               <input
                 type="password"
                 className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                name="password"
+                value={data.password}
+                onChange={handleChange}
                 placeholder="Create a password"
               />
             </div>
 
             <div className="flex items-center text-sm">
               <input
+                onChange={() => setAgreement((prev) => !prev)}
                 type="checkbox"
                 className="rounded border-2 border-gray-300 mr-2"
               />
@@ -133,10 +205,15 @@ export const SignUp: React.FC = () => {
             </div>
 
             <button
+              disabled={!agreement || isLoading}
               type="submit"
-              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              className=" overflow-y-hidden w-full bg-purple-600 text-white flex justify-center items-center py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:brightness-75 disabled:hover:bg-purple-600 disabled:cursor-not-allowed  "
             >
-              Create Account
+              {isLoading ? (
+                <Loading color="white" w={"w-[30%]"} />
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 
