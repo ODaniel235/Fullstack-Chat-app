@@ -82,7 +82,7 @@ model Status{
   userId              String    @id
   poster              String
   profilePicture      String
-  statuses            StatusData[]?
+  statuses            StatusData[]
 }
 model StatusData{
   id                    String      @id       @default(cuid())

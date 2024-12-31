@@ -8,7 +8,6 @@ const useStatusStore = create<any>((set, get) => ({
   fetchStatus: async (toast: Function) => {
     try {
       const response = await axiosInstance.get("/status/");
-      console.log("Statuses===>", response);
       set({ myStatuses: response.data.myStatus });
       set({ otherStatuses: response.data.allStatuses });
     } catch (error) {

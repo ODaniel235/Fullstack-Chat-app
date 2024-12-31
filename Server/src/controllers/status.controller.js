@@ -25,6 +25,7 @@ export const createStatus = async (req, res) => {
         content: contentData,
         type,
         backgroundColor,
+        userId: userId,
       },
     });
     const status = await prisma.status.update({

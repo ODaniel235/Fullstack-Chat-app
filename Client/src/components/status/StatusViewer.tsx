@@ -11,6 +11,8 @@ import {
 import { Status } from "../../types"; */
 import { myStatuses, sampleStatuses } from "../../data";
 import { statusView } from "../../types";
+import useAuthStore from "@/store/useAuthStore";
+import useStatusStore from "@/store/useStatusStore";
 
 interface StatusViewerProps {
   statusData: statusView | null;
@@ -26,9 +28,10 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   handleNext,
 }) => {
   if (statusData == null) return;
-  const statuses = sampleStatuses;
+  const { userData } = useAuthStore();
+  const { otherStatuses } = useStatusStore();
   const [isMyStatus, setIsMyStatus] = useState<boolean>(
-    statusData.userId == "1"
+    statusData.userId == userData.id
   );
   const [reply, setReply] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,7 +45,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   if (!statusData) return;
 
   useEffect(() => {
-    setCurrentIndex(statuses.findIndex((s) => s.id == statusData.id));
+    setCurrentIndex(otherStatuses.findIndex((s) => s.userId == statusData.id));
     if (paused) return; // Skip setting up the interval if paused
     const videoElement = videoRef.current;
 
@@ -100,7 +103,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
                 return prev;
               }
             } else {
-              if (currentIndex < statuses.length - 1) {
+              if (currentIndex < otherStatuses.length - 1) {
                 setCurrentIndex((prevIndex) => prevIndex + 1);
                 handleNext(statusData.userId === "1");
                 return 0;
@@ -122,7 +125,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
     statusData,
     isMyStatus,
     currentIndex,
-    statuses.length,
+    otherStatuses.length,
     handleNext,
     onClose,
   ]);
@@ -233,7 +236,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
           <button
             onClick={() => {
               const isDesktop = window.innerWidth;
-              !isDesktop && handlePrevious(statusData.userId == "1");
+              !isDesktop && handlePrevious(statusData.userId == userData.id);
               !isDesktop && resetInterval();
             }}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full bg-black/50 hover:bg-white/20 transition shadow-md"
@@ -241,7 +244,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
             <ChevronLeft
               onClick={() => {
                 const isDesktop = window.innerWidth;
-                isDesktop && handlePrevious(statusData.userId == "1");
+                isDesktop && handlePrevious(statusData.userId == userData.id);
                 isDesktop && resetInterval();
               }}
               className="hidden md:flex w-6 h-6"
@@ -250,7 +253,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
           <button
             onClick={() => {
               const isDesktop = window.innerWidth;
-              !isDesktop && handleNext(statusData.userId == "1");
+              !isDesktop && handleNext(statusData.userId == userData.id);
               !isDesktop && resetInterval();
             }}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full bg-black/50 hover:bg-white/20 transition shadow-md"
@@ -258,7 +261,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
             <ChevronRight
               onClick={() => {
                 const isDesktop = window.innerWidth;
-                isDesktop && handleNext(statusData.userId == "1");
+                isDesktop && handleNext(statusData.userId == userData.id);
                 isDesktop && resetInterval();
               }}
               className="hidden md:flex w-6 h-6"

@@ -1,8 +1,9 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image, Video, Type, X } from "lucide-react";
+import { Image, Video, Type, X, Loader } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import useStatusStore from "@/store/useStatusStore";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateStatusModalProps {
   isOpen: boolean;
@@ -19,20 +20,18 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
   const [content, setContent] = useState("");
   const [backgroundColor, setBackgroundColor] = useState("#6B7280");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { createStatus } = useStatusStore();
-
-  const handleSubmit = () => {
+  const { toast } = useToast();
+  const handleSubmit = async () => {
     if (!content) return;
-/* 
-    createStatus({
-      type: statusType,
-      content,
-      backgroundColor: statusType === "text" ? backgroundColor : undefined,
-    }); */
+    setIsLoading(true);
+
+    await createStatus(statusType, content, toast, backgroundColor);
 
     onClose();
     setContent("");
+    setIsLoading(false);
     setStatusType("text");
   };
 
@@ -187,9 +186,13 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
               <button
                 onClick={handleSubmit}
                 disabled={!content}
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Share Status
+                {isLoading ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  "Share Status"
+                )}
               </button>
             </div>
           </motion.div>
