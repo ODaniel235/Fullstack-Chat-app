@@ -19,7 +19,9 @@ export const signup = async (req, res) => {
     // Handle passwordless signup
     if (type === "passwordless") {
       if (userExists) {
-        newUser = userExists;
+        return res
+          .status(401)
+          .json({ error: "An account already exists with this credential" });
       } else {
         newUser = await prisma.user.create({
           data: {
@@ -128,6 +130,7 @@ export const login = async (req, res) => {
             },
           },
         });
+        console.log(newUser);
         const newStatus = await prisma.status.create({
           data: {
             poster: newUser.name,
@@ -171,6 +174,13 @@ export const login = async (req, res) => {
         .status(200)
         .json({ message: "Sign in successful", data: userExists, token });
     }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const checkAuth = async (req, res) => {
+  try {
+    res.status(200).json(req.user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

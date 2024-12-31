@@ -1,9 +1,11 @@
+import { status } from "@prisma/client";
 import prisma from "../db/db.js";
 import { v2 as cloudinary } from "cloudinary";
 import { disconnect } from "mongoose";
 import cron from "node-cron";
 export const createStatus = async (req, res) => {
   const userId = req.user.id;
+  console.log(req.user.id);
   const { type, content, backgroundColor } = req.body;
   try {
     if (!type || !content)
@@ -100,6 +102,51 @@ export const deleteByTimestamp = async (req, res) => {
       });
     }
     res.status(200).json({ message: "Statuses older than 24hrs deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const fetchStatuses = async (req, res) => {
+  const user = req.user;
+  try {
+    const statuses = await prisma.status.findFirst({
+      where: { userId: user.id },
+      include: {
+        statuses: {
+          orderBy: {
+            timestamp: "asc",
+          },
+        },
+      },
+    });
+    const conversationsToFind = await prisma.conversation.findMany({
+      where: { participantIds: { hasSome: [user.id] } },
+    });
+    const idsToFind = [];
+    conversationsToFind.forEach((convo) => {
+      const otherParticipants = convo.participantIds.filter(
+        (id) => id !== user.id
+      );
+      idsToFind.push(...otherParticipants); // Add other participant IDs to idsToFind
+    });
+    const allStatuses = [];
+    idsToFind.forEach(async (id) => {
+      const newStatus = await prisma.status.findFirst({
+        where: {
+          userId: id,
+        },
+        include: {
+          statuses: {
+            orderBy: {
+              timestamp: "asc",
+            },
+          },
+        },
+      });
+      allStatuses.push(newStatus);
+    });
+
+    res.status(200).json({ myStatus: statuses, allStatuses });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,23 +1,37 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { Video, Phone, Mic } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { sampleChats } from "../../data";
 import { useCallStore, useStore } from "../../store/useStore";
 import { AudioRecordingModal } from "./AudioRecordingModal";
 import { VideoRecordingModal } from "./VideoRecordingModal";
+import useChatStore from "@/store/useChatStore";
+import useAuthStore from "@/store/useAuthStore";
+import { useToast } from "@/hooks/use-toast";
 export const ChatWindow: React.FC = () => {
+  const { toast } = useToast();
   const { setCall, inCall } = useCallStore();
   const { currentUser } = useStore();
+  const { selectedChat, isMessageLoading, messages, fetchMessages } =
+    useChatStore();
+  const { userData } = useAuthStore();
   const [isRecording, setIsRecording] = useState({
     type: "null",
     value: true,
   });
-  const { chatId } = useParams();
   const navigate = useNavigate();
-  const findChat = sampleChats.find((p) => (p = chatId));
-  const participantData = findChat.participants[1];
+  const participantData = selectedChat?.participants?.filter(
+    (p) => p.id !== userData.id
+  )[0];
+  useEffect(() => {
+    if (!participantData) {
+      navigate("/chats");
+      return;
+    }
+    fetchMessages(participantData.id, toast, navigate);
+  }, []);
   const startCall = (type: string) => {
     if (type == "video") {
       setCall(

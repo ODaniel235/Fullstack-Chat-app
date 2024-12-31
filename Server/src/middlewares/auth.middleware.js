@@ -1,19 +1,35 @@
 import jwt from "jsonwebtoken";
-
-const authMiddleware = (req, res, next) => {
+import prisma from "../db/db.js";
+const authMiddleware = async (req, res, next) => {
   try {
     const { RefreshToken, AccessToken } = req.cookies;
-    console.log(AccessToken, RefreshToken);
     if (!RefreshToken)
       return res
         .status(401)
         .json({ error: "Session expired, sign in to continue" });
     if (AccessToken) {
       const decoded = jwt.verify(AccessToken, process.env.JWT_SECRET);
-      console.log(decoded);
+
       if (!decoded) return res.status(401).json({ error: "Unauthorized" });
-      req.user = decoded;
-      console.log(decoded);
+      //Fetch user here
+      const user = await prisma.user.findFirst({
+        where: { id: decoded.id },
+        select: {
+          name: true,
+          id: true,
+          blockedUsers: true,
+          twoFactorEnabled: true,
+          updatedAt: true,
+          avatar: true,
+          email: true,
+          theme: true,
+          status: true,
+          location: true,
+          privacySettings: true,
+          password: false,
+        },
+      });
+      req.user = user;
       next();
     } else {
       const decoded = jwt.verify(RefreshToken, process.env.JWT_SECRET);
@@ -32,8 +48,24 @@ const authMiddleware = (req, res, next) => {
         /*     secure: "true", */
         maxAge: 60 * 1000,
       });
-      req.user = decoded;
-      console.log(decoded);
+      const user = await prisma.user.findFirst({
+        where: { id: decoded.id },
+        select: {
+          name: true,
+          id: true,
+          blockedUsers: true,
+          twoFactorEnabled: true,
+          updatedAt: true,
+          avatar: true,
+          email: true,
+          theme: true,
+          status: true,
+          location: true,
+          privacySettings: true,
+          password: false,
+        },
+      });
+      req.user = user;
       next();
     }
   } catch (error) {

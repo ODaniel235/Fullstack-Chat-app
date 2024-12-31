@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare } from "lucide-react";
+import { Loader, Mail, MessageSquare } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import useAuthStore from "@/store/useAuthStore";
-import Loading from "@/components/shared/Loader";
 export const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const [agreement, setAgreement] = useState(false);
@@ -55,13 +54,17 @@ export const SignUp: React.FC = () => {
           }
         );
         console.log("Decoded token info ==>", resp);
-        signup({
-          firstname: resp.data.given_name,
-          lastname: resp.data.family_name,
-          email: resp.data.email,
-          avatar: resp.data.picture,
-          type: "passwordless",
-        });
+        signup(
+          {
+            firstname: resp.data.given_name,
+            lastname: resp.data.family_name,
+            email: resp.data.email,
+            avatar: resp.data.picture,
+            type: "passwordless",
+          },
+          navigate,
+          toast
+        );
       } catch (error) {
         console.error(error);
       }
@@ -210,7 +213,7 @@ export const SignUp: React.FC = () => {
               className=" overflow-y-hidden w-full bg-purple-600 text-white flex justify-center items-center py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:brightness-75 disabled:hover:bg-purple-600 disabled:cursor-not-allowed  "
             >
               {isLoading ? (
-                <Loading color="white" w={"w-[30%]"} />
+                <Loader className="animate-spin" />
               ) : (
                 "Create Account"
               )}

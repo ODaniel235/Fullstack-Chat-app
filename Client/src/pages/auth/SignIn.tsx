@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare } from "lucide-react";
+import { Loader, Mail, MessageSquare } from "lucide-react";
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import useAuthStore from "@/store/useAuthStore";
 import { useToast } from "@/hooks/use-toast";
-import Loading from "@/components/shared/Loader";
 import { useNavigate } from "react-router-dom";
 export const SignIn: React.FC = () => {
   const { toast } = useToast();
@@ -174,7 +173,7 @@ export const SignIn: React.FC = () => {
               disabled={isLoading}
               className="w-full disabled:brightness-75 disabled:cursor-not-allowed disabled:hover:bg-indigo-600 flex justify-center items-center bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
             >
-              {isLoading ? <Loading w={"w-[30%]"} color="white" /> : "Sign in"}
+              {isLoading ? <Loader className=" animate-spin" /> : "Sign in"}
             </button>
           </form>
 

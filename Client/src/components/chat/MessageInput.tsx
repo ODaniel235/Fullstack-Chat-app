@@ -1,13 +1,42 @@
-import React, { useState } from 'react';
-import { Send } from 'lucide-react';
+import React, { useState } from "react";
+import { Loader, Send } from "lucide-react";
+import analyzeText from "@/utils/chatModeration";
+import { useToast } from "@/hooks/use-toast";
+import useChatStore from "@/store/useChatStore";
+import useAuthStore from "@/store/useAuthStore";
+import axiosInstance from "@/utils/axios";
 
 export const MessageInput: React.FC = () => {
-  const [message, setMessage] = useState('');
-
+  const { toast } = useToast();
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState<boolean>(false);
+  const { selectedChat, handleMessage } = useChatStore();
+  const { userData } = useAuthStore();
   // TODO: Implement message sending functionality
-  const handleSend = () => {
-    console.log('Sending message:', message);
-    setMessage('');
+  const wipeMessage = () => {
+    setMessage("");
+  };
+  const handleSend = async () => {
+    setIsSending(true);
+    console.log("Sending message:", message);
+    const vulgarScore = await analyzeText(message);
+    const roundedScore = Math.round(vulgarScore?.score);
+    if (roundedScore == 1) {
+      toast({
+        variant: "destructive",
+        title: "Warning",
+        description:
+          "Message contains explicit content, Please rephrase your message",
+      });
+      setIsSending(false);
+      return;
+    }
+    const participantId = selectedChat?.participants?.filter(
+      (p) => p.id !== userData.id
+    )[0].id;
+    console.log(participantId);
+    await handleMessage("text", participantId, message, toast, wipeMessage);
+    setIsSending(false);
   };
 
   return (
@@ -23,7 +52,11 @@ export const MessageInput: React.FC = () => {
         onClick={handleSend}
         className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
       >
-        <Send className="w-5 h-5" />
+        {isSending ? (
+          <Loader className="w-5 h-5 animate-spin" />
+        ) : (
+          <Send className="w-5 h-5" />
+        )}
       </button>
     </div>
   );

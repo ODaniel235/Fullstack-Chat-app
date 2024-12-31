@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MainLayout } from "./components/layout/MainLayout";
@@ -13,29 +13,82 @@ import { GroupInfo } from "./components/groups/GroupInfo";
 import { SignIn } from "./pages/auth/SignIn";
 import { SignUp } from "./pages/auth/SignUp";
 import { UserSearch } from "./components/user/UserSearch";
-import AuthProvider from "./hooks/useAuthContext";
+import useAuthStore from "./store/useAuthStore";
+import { Loader } from "lucide-react";
+import useStatusStore from "./store/useStatusStore";
+import { useToast } from "./hooks/use-toast";
 function App() {
+  const { toast } = useToast();
+  const { userData, checkAuth, isCheckingAuth } = useAuthStore();
+  const { myStatuses, fetchStatus } = useStatusStore();
+  useEffect(() => {
+    checkAuth();
+    if (!myStatuses) {
+      fetchStatus(toast);
+    }
+  }, [checkAuth]);
+  console.log(userData);
+  if (isCheckingAuth && !userData)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="size-10 animate-spin" />
+      </div>
+    );
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENTID}>
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Navigate to="/chats" replace />} />
-              <Route path="chats" element={<ChatList />} />
-              <Route path="chat/:chatId" element={<ChatWindow />} />
-              <Route path="status" element={<Status />} />
-              <Route path="groups" element={<GroupList />} />
-              <Route path="groups/:groupId" element={<GroupChat />} />
-              <Route path="groups/:groupId/info" element={<GroupInfo />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="user/:userId" element={<UserProfile />} />
-              <Route path="search" element={<UserSearch />} />
-            </Route>
-          </Routes>
-        </AuthProvider>
+        <Routes>
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/" element={<MainLayout />}>
+            <Route
+              index
+              element={
+                userData ? (
+                  <Navigate to="/chats" replace />
+                ) : (
+                  <Navigate to="/signin" />
+                )
+              }
+            />
+            <Route
+              path="chats"
+              element={userData ? <ChatList /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="chat/:chatId"
+              element={userData ? <ChatWindow /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="status"
+              element={userData ? <Status /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="groups"
+              element={userData ? <GroupList /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="groups/:groupId"
+              element={userData ? <GroupChat /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="groups/:groupId/info"
+              element={userData ? <GroupInfo /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="settings"
+              element={userData ? <Settings /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="user/:userId"
+              element={userData ? <UserProfile /> : <Navigate to="/signin" />}
+            />
+            <Route
+              path="search"
+              element={userData ? <UserSearch /> : <Navigate to="/signin" />}
+            />
+          </Route>
+        </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
   );

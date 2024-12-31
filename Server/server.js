@@ -1,4 +1,4 @@
-/* import { app, server } from "./src/socket/socket.js"; */
+import { app, server } from "./src/socket/socket.js";
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
 import cors from "cors";
 import router from "./src/routes/router.js";
-const app = express();
 app.use(cookieParser());
 dotenv.config();
 const corsOptions = {
@@ -38,6 +37,6 @@ if (process.env.NODE_ENV === "production") {
   });
 }
  */
-app.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

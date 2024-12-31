@@ -11,10 +11,10 @@ import useAuthStore from "@/store/useAuthStore";
 export const ChatList: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const chats = useChatStore((state) => state.chats);
+  const { chats } = useChatStore();
 
   const { setActiveChat } = useStore();
-  const { fetchConversation } = useChatStore();
+  const { fetchConversation, handleChatClick } = useChatStore();
   const { userData } = useAuthStore();
   useEffect(() => {
     const fetchConvo = async () => {
@@ -22,13 +22,9 @@ export const ChatList: React.FC = () => {
     };
     fetchConvo();
   }, []);
-  useEffect(() => {
-    console.log("Chats updated:", chats);
-  }, [chats]);
-  console.log("Chats==>", chats);
-  const handleChatClick = (chatId: string) => {
+  const handleClick = (chatId: string) => {
     setActiveChat(chatId);
-    console.log(chatId);
+    handleChatClick(chatId);
     navigate(`/chat/${chatId}`);
   };
 
@@ -49,32 +45,31 @@ export const ChatList: React.FC = () => {
       <div className="flex-1 overflow-y-auto">
         {chats.length > 0 ? (
           <div className="divide-y dark:divide-gray-700">
-            {chats.map((chat) => {
+            {chats.map((chat: any) => {
+              console.log(chat);
               const otherParticipant = chat?.participants?.filter(
                 (p) => p.id !== userData.id
-              );
-              console.log("Participant==>", otherParticipant);
+              )[0];
               const lastMessage = chat.lastMessage;
-              console.log("Id===>", userData.id);
               return (
                 <motion.div
                   key={chat.id}
                   onClick={() => {
-                    handleChatClick(chat.id);
+                    handleClick(chat.id);
                   }}
                   className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   whileHover={{ scale: 1.01 }}
                 >
                   <div className="flex items-center space-x-3">
                     <img
-                      src={otherParticipant?.avatar}
-                      alt={otherParticipant?.name}
+                      src={otherParticipant.avatar}
+                      alt={otherParticipant.name}
                       className="w-12 h-12 rounded-full"
                     />
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
                         <h3 className="font-semibold">
-                          {otherParticipant?.name}
+                          {otherParticipant.name}
                         </h3>
                         <span className="text-sm text-gray-500">
                           {formatDistanceToNow(chat?.updatedAt)}

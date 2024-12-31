@@ -1,3 +1,5 @@
+import { Skeleton } from "../ui/skeleton";
+
 const MessageSkeleton = () => {
   // Create an array of 6 items for skeleton messages
   const skeletonMessages = Array(6).fill(2);
@@ -5,19 +7,17 @@ const MessageSkeleton = () => {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {skeletonMessages.map((_, idx) => (
-        <div key={idx} className={`chat ${idx % 2 === 0 ? "chat-start" : "chat-end"}`}>
-          <div className="chat-image avatar">
-            <div className="size-10 rounded-full">
-              <div className="skeleton w-full h-full rounded-full" />
-            </div>
-          </div>
-
-          <div className="chat-header mb-1">
-            <div className="skeleton h-4 w-16" />
-          </div>
-
-          <div className="chat-bubble bg-transparent p-0">
-            <div className="skeleton h-16 w-[200px]" />
+        <div
+          key={idx}
+          className={`flex${idx % 2 ? " justify-end " : "justify-start"}`}
+        >
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            {idx % 2 ? (
+              <Skeleton className="h-4 w-[200px] ml-auto" />
+            ) : (
+              <Skeleton className="h-4 w-[200px]  mr-auto" />
+            )}
           </div>
         </div>
       ))}

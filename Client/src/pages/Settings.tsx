@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { useStore } from "../store/useStore";
 import { motion } from "framer-motion";
 import { Shield, User, Palette, Lock, Camera, Upload } from "lucide-react";
 import { OTPModal } from "../components/modals/OTPModal";
 import { ChangePasswordModal } from "../components/modals/ChangePasswordModal";
-import { use } from "framer-motion/client";
 import useAuthStore from "@/store/useAuthStore";
+import useThemeStore from "@/store/useThemeStore";
 
 export const Settings: React.FC = () => {
   const { userData } = useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const { changeThemes, theme } = useThemeStore();
   const [basics, setBasics] = useState({
     firstName: "",
     lastName: "",
@@ -49,25 +49,7 @@ export const Settings: React.FC = () => {
   };
   const changeTheme = (e: React.ChangeEvent<HTMLSelectElement>) => {
     console.log(e.target.value);
-    switch (e.target.value) {
-      case "dark":
-        document.documentElement.classList.remove("light");
-        document.documentElement.classList.add("dark");
-
-        break;
-      case "light":
-        document.documentElement.classList.remove("dark");
-        document.documentElement.classList.add("light");
-        break;
-      default:
-        document.documentElement.classList.remove("dark", "light");
-        const isDarkMode = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
-        document.documentElement.classList.toggle("dark", isDarkMode);
-        console.log(isDarkMode);
-        break;
-    }
+    changeThemes(e.target.value);
   };
   return (
     <motion.div
