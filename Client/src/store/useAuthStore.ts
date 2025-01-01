@@ -3,6 +3,8 @@ import axiosInstance from "../utils/axios";
 import { authSchema, loginAuthSchema } from "@/types/formType";
 import { AxiosError } from "axios";
 import { io } from "socket.io-client";
+import getBase64Size from "@/utils/sizeInBase";
+import React from "react";
 const BASE_URL =
   import.meta.env.MODE === "development" ? "http://localhost:8080" : "/";
 const useAuthStore = create<any>((set, get) => ({
@@ -10,7 +12,9 @@ const useAuthStore = create<any>((set, get) => ({
   isCheckingAuth: true,
   socket: null,
   userData: null,
-
+  setUser: (data) => {
+    set({ userData: data });
+  },
   signup: async (data: any, navigate: Function, toast: Function) => {
     try {
       set({ isCheckingAuth: true });
@@ -126,7 +130,9 @@ const useAuthStore = create<any>((set, get) => ({
         visibility,
         password,
         twostep,
+        avatar,
       };
+      console.log("Data===>", data);
       //simulate post request
       const response = await axiosInstance.put("/auth", dataToUpdate);
       if (response.status == 200) {
@@ -156,7 +162,78 @@ const useAuthStore = create<any>((set, get) => ({
       }
     }
   },
-  checkAuth: async (navigate: Function) => {
+  handleFileUpload: async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: string,
+    toast: Function
+  ) => {
+    const file = e.target.files?.[0]; // Get the first selected file
+    if (!file) {
+      toast({
+        variant: "destructive",
+        title: "No file selected",
+        description: "Please select a file to upload.",
+      });
+      return;
+    }
+
+    const sizeInMb = (file.size / (1024 * 1024)).toFixed(2); // File size in MB
+
+    try {
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+
+        // Calculate Base64 size
+        const baseSize = getBase64Size(base64String);
+
+        // Check if the file exceeds the size limit
+        if (parseFloat(sizeInMb) > 50 || parseFloat(baseSize.sizeInMB) > 50) {
+          toast({
+            variant: "destructive",
+            title: "File too big",
+            description: `Selected file is ${baseSize.sizeInMB}MB and exceeds the 50MB limit.`,
+          });
+          return;
+        }
+
+        // Proceed with uploading or other tasks
+        try {
+          await get().updateData({ avatar: base64String }, toast);
+        } catch (error) {
+          if (error instanceof AxiosError) {
+            const err =
+              error?.response?.data?.error ||
+              "An error occurred, please try again.";
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: err,
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "An error occurred while uploading the file.",
+            });
+          }
+        }
+      };
+
+      // Read the file as a data URL (Base64)
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  },
+
+  checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
       set({ userData: res.data });

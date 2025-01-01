@@ -18,10 +18,12 @@ import { Loader } from "lucide-react";
 import useStatusStore from "./store/useStatusStore";
 import { useToast } from "./hooks/use-toast";
 import useThemeStore from "./store/useThemeStore";
+import useSocketStore from "./store/useSocketStore";
 function App() {
   const { toast } = useToast();
-  const { userData, checkAuth, isCheckingAuth } = useAuthStore();
+  const { userData, checkAuth, isCheckingAuth, socket } = useAuthStore();
   const { myStatuses, fetchStatus } = useStatusStore();
+  const { fetchMessages } = useSocketStore();
   const { changeThemes } = useThemeStore();
   useEffect(() => {
     checkAuth();
@@ -32,8 +34,11 @@ function App() {
   console.log(userData);
   useEffect(() => {
     if (!userData) return;
-    changeThemes(userData.theme);
+    changeThemes(userData.theme, toast);
   }, [userData]);
+  useEffect(() => {
+    fetchMessages();
+  }, [socket]);
   if (isCheckingAuth && !userData)
     return (
       <div className="flex items-center justify-center h-screen">

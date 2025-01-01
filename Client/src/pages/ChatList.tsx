@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useStore } from "../store/useStore";
-import { sampleChats } from "../data/sampleData";
 import { formatDistanceToNow } from "../utils/dateUtils";
 import useChatStore from "@/store/useChatStore";
 import { useToast } from "@/hooks/use-toast";
@@ -83,11 +82,20 @@ export const ChatList: React.FC = () => {
                   whileHover={{ scale: 1.01 }}
                 >
                   <div className="flex items-center space-x-3">
-                    <img
-                      src={otherParticipant.avatar}
-                      alt={otherParticipant.name}
-                      className="w-12 h-12 rounded-full"
-                    />
+                    {otherParticipant.privacySettings.profileVisibility ? (
+                      <img
+                        src={otherParticipant.avatar}
+                        alt={otherParticipant.name || "User Avatar"}
+                        className="w-12 h-12 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl bg-blue-600">
+                        {otherParticipant.name
+                          ?.substring(0, 1)
+                          ?.toUpperCase() || "?"}
+                      </div>
+                    )}
+
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
                         <h3 className="font-semibold">

@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { sampleUsers } from '../data/sampleData';
-import { UserProfileHeader } from '../components/user/UserProfileHeader';
-import { UserProfileInfo } from '../components/user/UserProfileInfo';
-import { CallModal } from '../components/chat/CallModal';
-import { VideoCallModal } from '../components/chat/VideoCallModal';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+
+import { UserProfileHeader } from "../components/user/UserProfileHeader";
+import { UserProfileInfo } from "../components/user/UserProfileInfo";
+import { CallModal } from "../components/chat/CallModal";
+import { VideoCallModal } from "../components/chat/VideoCallModal";
 
 export const UserProfile: React.FC = () => {
-  const { userId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log(location);
   const [showCallModal, setShowCallModal] = useState(false);
   const [showVideoCallModal, setShowVideoCallModal] = useState(false);
-
-  const user = sampleUsers.find(u => u.id === userId);
+  const [user, setUser] = useState(location.state);
 
   if (!user) {
     return (
@@ -24,7 +24,8 @@ export const UserProfile: React.FC = () => {
   }
 
   const handleMessage = () => {
-    navigate(`/chat/${userId}`);
+    /*     navigate(`/chat/${userId}`); */
+    navigate(`/chat/${user.id}`);
   };
 
   return (

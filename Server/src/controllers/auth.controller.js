@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import prisma from "../db/db.js";
 import { signToken } from "../utils/utils.js";
-import { v2 as cloudinary } from "cloudinary";
+import uploadBase64 from "../utils/cloudinary.js";
+import { getUserSocket, io } from "../socket/socket.js";
 export const signup = async (req, res) => {
   const { firstname, lastname, email, password, type, avatar, location } =
     req.body;
@@ -205,11 +206,8 @@ export const updateUser = async (req, res) => {
     // Ensure at least one field is provided
     let newAvatar;
     let passwordToPush;
-    if (newAvatar) {
-      const link = await cloudinary.uploader.upload(avatar, {
-        folder: "images",
-      });
-      newAvatar = link.secure_url;
+    if (avatar) {
+      newAvatar = await uploadBase64(avatar, "images");
     }
     if (password) {
       passwordToPush = await bcrypt.hash(password, 12);
@@ -222,6 +220,7 @@ export const updateUser = async (req, res) => {
           lastName || user.name.split(" ")[1]
         }`,
       }),
+      ...(bio && { bio }),
 
       // Add avatar if newAvatar is provided
       ...(newAvatar && { avatar: newAvatar }),
@@ -253,16 +252,13 @@ export const updateUser = async (req, res) => {
         },
       }),
     };
-
-    // Log updateData for debugging
     console.log(updateData);
-
     // Update user in the database
-    await prisma.user.update({
+    const updatedData = await prisma.user.update({
       where: { id: user.id },
       data: updateData,
     });
-
+    io.to(getUserSocket(user.id)).emit("updatedProfile", updatedData);
     // Return success response
     return res.status(200).json({ message: "User updated successfully" });
   } catch (err) {

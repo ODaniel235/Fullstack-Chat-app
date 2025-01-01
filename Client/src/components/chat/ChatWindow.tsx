@@ -62,7 +62,11 @@ export const ChatWindow: React.FC = () => {
       <div className="p-4 border-b flex items-center justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center space-x-3">
           <img
-            onClick={() => navigate(`/user/${participantData?.id}`)}
+            onClick={() =>
+              navigate(`/user/${participantData?.id}`, {
+                state: participantData,
+              })
+            }
             src={participantData?.avatar}
             alt="Contact"
             className="w-10 h-10 rounded-full hover:cursor-pointer"

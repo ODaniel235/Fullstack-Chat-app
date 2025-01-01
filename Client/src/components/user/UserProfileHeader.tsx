@@ -45,6 +45,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           <button
             onClick={onMessage}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white"
+
           >
             <MessageSquare className="w-6 h-6" />
           </button>

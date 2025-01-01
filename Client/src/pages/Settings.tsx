@@ -8,7 +8,7 @@ import useThemeStore from "@/store/useThemeStore";
 import { useToast } from "@/hooks/use-toast";
 
 export const Settings: React.FC = () => {
-  const { userData, updateData } = useAuthStore();
+  const { userData, updateData, handleFileUpload } = useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { toast } = useToast();
@@ -37,10 +37,9 @@ export const Settings: React.FC = () => {
       setTwoFactorEnabled(!twoFactorEnabled);
     }
   };
-  const handleImageUpdate = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: string
-  ) => {};
+  const handleImageUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileUpload(e, "Profile", toast);
+  };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -51,8 +50,8 @@ export const Settings: React.FC = () => {
     console.log(basics);
   };
   const changeTheme = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(e.target.value);
-    changeThemes(e.target.value);
+    changeThemes(e.target.value, toast);
+    updateData({ theme: e.target.value }, toast);
   };
   const handleUpdate = async (basic?: boolean, value?: any, data?: any) => {
     if (basic) {
@@ -97,10 +96,7 @@ export const Settings: React.FC = () => {
                 className="relative hover:cursor-pointer"
               >
                 <img
-                  src={
-                    userData?.avatar ||
-                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
-                  }
+                  src={userData?.avatar}
                   alt="Profile"
                   className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800"
                 />{" "}
@@ -111,9 +107,12 @@ export const Settings: React.FC = () => {
                   id="uploadImage"
                   style={{ display: "none" }}
                 />
-                <button className="absolute bottom-0 right-0 p-2 bg-blue-500 rounded-full text-white">
+                <label
+                  htmlFor="uploadImage"
+                  className="absolute bottom-0 right-0 p-2 bg-blue-500 rounded-full text-white"
+                >
                   <Upload className="w-4 h-4" />
-                </button>
+                </label>
               </label>
             </div>
           </div>
@@ -245,7 +244,7 @@ export const Settings: React.FC = () => {
             <select
               name="visibility"
               className="w-full p-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600"
-              defaultValue={userData.privacySettings.profileVisibility} // Bind the current value
+              defaultValue={userData?.privacySettings.profileVisibility} // Bind the current value
               onChange={(e) =>
                 handleUpdate(false, "visibility", e.target.value)
               } // Handle changes here

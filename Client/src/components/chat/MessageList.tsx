@@ -6,6 +6,7 @@ import AudioMessage from "./AudioMessage";
 import useAuthStore from "@/store/useAuthStore";
 import useChatStore from "@/store/useChatStore";
 import MessageSkeleton from "../skeletons/MessageSkeleton";
+import formatDate from "@/utils/formatDate";
 
 export const MessageList: React.FC = () => {
   const { userData } = useAuthStore();
@@ -25,14 +26,7 @@ export const MessageList: React.FC = () => {
         return null;
     }
   };
-  const formatDate = (date: string) => {
-    const newDate = new Date(date);
-    const returnDate = newDate.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    return returnDate;
-  };
+
   if (isMessagesLoading) return <MessageSkeleton />;
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
