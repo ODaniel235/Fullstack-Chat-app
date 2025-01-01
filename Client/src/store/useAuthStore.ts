@@ -132,7 +132,6 @@ const useAuthStore = create<any>((set, get) => ({
         twostep,
         avatar,
       };
-      console.log("Data===>", data);
       //simulate post request
       const response = await axiosInstance.put("/auth", dataToUpdate);
       if (response.status == 200) {

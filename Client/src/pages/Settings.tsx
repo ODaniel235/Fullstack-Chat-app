@@ -66,7 +66,7 @@ export const Settings: React.FC = () => {
       }
     }
     await updateData({ [value]: data }, toast);
-    console.log({ [value]: data });
+  
   };
   return (
     <motion.div

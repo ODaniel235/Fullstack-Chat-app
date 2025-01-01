@@ -11,6 +11,12 @@ const useChatStore = create<any>((set, get) => ({
   selectedChat: [],
   isMessagesLoading: true,
   messages: [],
+  setMessages: (data) => {
+    set({ messages: data });
+  },
+  setChats: (data) => {
+    set({ chats: data });
+  },
   fetchConversation: async (toast: Function) => {
     try {
       const response = await axiosInstance.get("/message", {

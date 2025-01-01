@@ -74,7 +74,7 @@ export const StatusList: React.FC<StatusListProps> = ({ onStatusClick }) => {
       <div>
         <h2 className="text-lg font-semibold mb-3">Recent Updates</h2>
         <div className="space-y-3 overflow-y-hidden">
-          {otherStatuses.length > 0 &&
+          {otherStatuses?.length > 0 &&
             otherStatuses.map((status) => (
               <motion.div
                 key={status.userId}

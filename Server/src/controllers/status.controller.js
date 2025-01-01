@@ -3,6 +3,7 @@ import prisma from "../db/db.js";
 import { v2 as cloudinary } from "cloudinary";
 import { disconnect } from "mongoose";
 import cron from "node-cron";
+import { getUserSocket, io } from "../socket/socket.js";
 export const createStatus = async (req, res) => {
   const userId = req.user.id;
   console.log(req.user.id);
@@ -26,12 +27,36 @@ export const createStatus = async (req, res) => {
         type,
         backgroundColor,
         userId: userId,
-        
       },
     });
     const status = await prisma.status.update({
-      where: { userId },
-      data: { statuses: { connect: { id: newStatusData.id } } },
+      where: { userId }, // Ensure userId matches the record you want to update
+      data: {
+        statuses: {
+          connect: { id: newStatusData.id }, // Connects the new status by ID
+        },
+      },
+      select: {
+        profilePicture: true,
+        poster: true,
+        userId: true,
+        statuses: true,
+      },
+    });
+
+    io.to(getUserSocket(userId)).emit("newStatus", { mine: true, status });
+    const conversationsToFind = await prisma.conversation.findMany({
+      where: { participantIds: { hasSome: [userId] } },
+    });
+    const idsToFind = [];
+    conversationsToFind.forEach((convo) => {
+      const otherParticipants = convo.participantIds.filter(
+        (id) => id !== userId
+      );
+      idsToFind.push(...otherParticipants); // Add other participant IDs to idsToFind
+    });
+    idsToFind.forEach((id) => {
+      io.to(getUserSocket(id)).emit("newStatus", { mine: false, status });
     });
     //To do socket event here
     res.status(201).json({

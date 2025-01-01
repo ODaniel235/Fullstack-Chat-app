@@ -1,5 +1,6 @@
 import prisma from "../db/db.js";
 import { v2 as cloudinary } from "cloudinary";
+import { getUserSocket, io } from "../socket/socket.js";
 export const sendMessage = async (req, res) => {
   const senderId = req.user.id;
   try {
@@ -57,6 +58,7 @@ export const sendMessage = async (req, res) => {
               id: newMessage.id,
             },
           },
+
           lastMessage: {
             type: newMessage.type,
             content: newMessage.content,
@@ -66,9 +68,36 @@ export const sendMessage = async (req, res) => {
             timeStamp: newMessage.timestamp,
           },
         },
+        include: {
+          messages: {
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
       });
     }
+    const allConvos = await prisma.conversation.findMany({
+      where: {
+        participantIds: {
+          hasSome: [senderId],
+        },
+      },
+      include: {
+        participants: {
+          orderBy: {
+            updatedAt: "asc",
+          },
+        },
+      },
+    });
     //Socket function goes here lol
+    conversation.participantIds.forEach((id) => {
+      io.to(getUserSocket(id)).emit("newMessage", {
+        conversation,
+        allConvos,
+      });
+    });
     res
       .status(201)
       .json({ message: "Message Sent", data: { newMessage, conversation } });

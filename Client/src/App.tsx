@@ -23,7 +23,7 @@ function App() {
   const { toast } = useToast();
   const { userData, checkAuth, isCheckingAuth, socket } = useAuthStore();
   const { myStatuses, fetchStatus } = useStatusStore();
-  const { fetchMessages } = useSocketStore();
+  const { listenToSocket } = useSocketStore();
   const { changeThemes } = useThemeStore();
   useEffect(() => {
     checkAuth();
@@ -31,14 +31,15 @@ function App() {
       fetchStatus(toast);
     }
   }, [checkAuth]);
-  console.log(userData);
+
   useEffect(() => {
     if (!userData) return;
     changeThemes(userData.theme, toast);
   }, [userData]);
   useEffect(() => {
-    fetchMessages();
+    listenToSocket();
   }, [socket]);
+
   if (isCheckingAuth && !userData)
     return (
       <div className="flex items-center justify-center h-screen">
