@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 /* import { useStore } from "../../store/useStore";
 import { Status } from "../../types"; */
-import { myStatuses, sampleStatuses } from "../../data";
 import { statusView } from "../../types";
 import useAuthStore from "@/store/useAuthStore";
 import useStatusStore from "@/store/useStatusStore";
@@ -29,7 +28,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
 }) => {
   if (statusData == null) return;
   const { userData } = useAuthStore();
-  const { otherStatuses } = useStatusStore();
+  const { otherStatuses, myStatuses } = useStatusStore();
   const [isMyStatus, setIsMyStatus] = useState<boolean>(
     statusData.userId == userData.id
   );
@@ -48,7 +47,6 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
     setCurrentIndex(otherStatuses.findIndex((s) => s.userId == statusData.id));
     if (paused) return; // Skip setting up the interval if paused
     const videoElement = videoRef.current;
-
     if (statusData.type === "video") {
       // Video-specific logic
       const updateProgress = () => {
@@ -60,7 +58,6 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
 
       const handleLoadedMetadata = () => {
         if (videoElement) {
-          console.log("Video duration:", videoElement.duration);
           setVideoDuration(videoElement.duration); // Get video duration
         }
       };
@@ -90,10 +87,10 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
           if (prev >= 100) {
             // Handle progress completion for non-video statuses
             if (isMyStatus) {
-              const statusIndex = myStatuses.data.findIndex(
+              const statusIndex = myStatuses.statuses.findIndex(
                 (s) => s.id === statusData.id
               );
-              if (statusIndex < myStatuses.data.length - 1) {
+              if (statusIndex < myStatuses.statuses.length - 1) {
                 setCurrentIndex((prevIndex) => prevIndex + 1);
                 handleNext(statusData.userId === "1");
                 return 0;
@@ -164,7 +161,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
     /*     replyToStatus(currentStatus.id, reply); */
     setReply("");
   };
-  const statusIndex = sampleStatuses.findIndex((s) =>
+  const statusIndex = otherStatuses.findIndex((s) =>
     s.data.some((d) => d.id === statusData?.id)
   );
   return (
@@ -208,7 +205,9 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
           className="relative mt-8 lg:mt-0 "
         >
           <p className="text-gray-300 mb-2 text-center text-sm lg:text-base font-medium">
-            {sampleStatuses[statusIndex]?.poster || "Unknown User"}
+            {isMyStatus
+              ? userData.name
+              : otherStatuses[statusIndex]?.poster || "Unknown User"}
           </p>
           {statusData.type === "text" ? (
             <div

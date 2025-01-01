@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useStore } from '../../store/useStore';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { useStore } from "../../store/useStore";
 
 interface JoinGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  group: boolean;
 }
 
-export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose }) => {
-  const [groupId, setGroupId] = useState('');
-  const { joinGroup } = useStore();
+export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
+  isOpen,
+  onClose,
+  group,
+}) => {
+  const [id, setId] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       // TODO: Implement group joining functionality
-      await joinGroup(groupId);
       onClose();
     } catch (error) {
-      console.error('Failed to join group:', error);
+      console.error("Failed to join group:", error);
       // TODO: Show error toast
     }
   };
@@ -40,7 +43,8 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
             className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md"
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">Join Group</h2>
+              {group ? "Join Group" : "Search user"}
+              <h2 className="text-xl font-semibold"></h2>
               <button
                 onClick={onClose}
                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
@@ -52,14 +56,16 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Group ID
+                  {group ? "Group ID" : "Email address"}
                 </label>
                 <input
                   type="text"
-                  value={groupId}
-                  onChange={(e) => setGroupId(e.target.value)}
+                  value={id}
+                  onChange={(e) => setId(e.target.value)}
                   className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="Enter group ID"
+                  placeholder={
+                    group ? "Enter Group ID..." : "Enter User Email Address"
+                  }
                 />
               </div>
 
@@ -67,7 +73,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
                 type="submit"
                 className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
               >
-                Join Group
+                {group ? "Join Group" : "Search user"}
               </button>
             </form>
           </motion.div>

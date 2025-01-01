@@ -4,51 +4,52 @@ import { Plus } from "lucide-react";
 import { StatusList } from "../components/status/StatusList";
 import { StatusViewer } from "../components/status/StatusViewer";
 import { CreateStatusModal } from "../components/status/CreateStatusModal";
-
-import { myStatuses, sampleStatuses } from "../data";
 import { statusView } from "../types";
+import useStatusStore from "@/store/useStatusStore";
 
 export const Status: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<statusView | null>();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { myStatuses, otherStatuses } = useStatusStore();
   const onClose = () => {
     setSelectedStatus(null);
-  };const handlePrevious = (isMine?: boolean) => {
+  };
+  const handlePrevious = (isMine?: boolean) => {
     if (isMine) {
       // Handle "myStatuses"
-      const currentIndex = myStatuses.data.findIndex(
+      const currentIndex = myStatuses.statuses.findIndex(
         (s) => s.id === selectedStatus?.id
       );
       if (currentIndex > 0) {
-        setSelectedStatus(myStatuses.data[currentIndex - 1]); // Set previous status
+        setSelectedStatus(myStatuses.statuses[currentIndex - 1]); // Set previous status
       } else {
         console.log("No previous status available in myStatuses.");
         onClose();
       }
     } else {
       // Handle "sampleStatuses"
-      const groupIndex = sampleStatuses.findIndex((group) =>
-        group.data.some((status) => status.id === selectedStatus?.id)
+      const groupIndex = otherStatuses.findIndex((group) =>
+        group.statuses.some((status) => status.id === selectedStatus?.id)
       );
 
       if (groupIndex !== -1) {
-        const currentGroup = sampleStatuses[groupIndex];
-        const currentStatusIndex = currentGroup.data.findIndex(
+        const currentGroup = otherStatuses[groupIndex];
+        const currentStatusIndex = currentGroup.statuses.findIndex(
           (status) => status.id === selectedStatus?.id
         );
 
         if (currentStatusIndex > 0) {
           // Previous status in the same group
-          setSelectedStatus(currentGroup.data[currentStatusIndex - 1]);
+          setSelectedStatus(currentGroup.statuses[currentStatusIndex - 1]);
           console.log(
             "Previous status in current group:",
-            currentGroup.data[currentStatusIndex - 1]
+            currentGroup.statuses[currentStatusIndex - 1]
           );
         } else if (groupIndex > 0) {
           // Move to the last status of the previous group
-          const previousGroup = sampleStatuses[groupIndex - 1];
+          const previousGroup = otherStatuses[groupIndex - 1];
           const lastStatusInPreviousGroup =
-            previousGroup.data[previousGroup.data.length - 1];
+            previousGroup.statuses[previousGroup.data.length - 1];
           setSelectedStatus(lastStatusInPreviousGroup);
           console.log(
             "Last status in previous group:",
@@ -69,22 +70,22 @@ export const Status: React.FC = () => {
   const handleNext = (isMine?: boolean) => {
     if (isMine) {
       const nextStatus =
-        myStatuses.data.findIndex((s) => s.id == selectedStatus?.id) + 1;
-      setSelectedStatus(myStatuses.data[nextStatus]);
+        myStatuses.statuses.findIndex((s) => s.id == selectedStatus?.id) + 1;
+      setSelectedStatus(myStatuses.statuses[nextStatus]);
     } else {
       // Handling "sampleStatuses"
-      const statusIndex = sampleStatuses.findIndex((s) =>
-        s.data.some((d) => d.id === selectedStatus?.id)
+      const statusIndex = otherStatuses.findIndex((s) =>
+        s.statuses.some((d) => d.id === selectedStatus?.id)
       );
 
       if (statusIndex !== -1) {
-        const currentGroup = sampleStatuses[statusIndex];
-        const currentStatusIndex = currentGroup.data.findIndex(
+        const currentGroup = otherStatuses[statusIndex];
+        const currentStatusIndex = currentGroup.statuses.findIndex(
           (s) => s.id === selectedStatus?.id
         );
 
         // Check if there's a next status in the current group
-        const nextStatus = currentGroup.data[currentStatusIndex + 1];
+        const nextStatus = currentGroup.statuses[currentStatusIndex + 1];
 
         if (nextStatus) {
           setSelectedStatus(nextStatus); // Set the next status in the current group
@@ -93,16 +94,16 @@ export const Status: React.FC = () => {
           // Check if there's a next group
           const nextGroupIndex = statusIndex + 1;
 
-          if (currentStatusIndex + 1 < currentGroup.data.length) {
+          if (currentStatusIndex + 1 < currentGroup.statuses.length) {
             // There is a next status in the current group
-            const nextStatus = currentGroup.data[currentStatusIndex + 1];
+            const nextStatus = currentGroup.statuses[currentStatusIndex + 1];
             setSelectedStatus(nextStatus);
             console.log("Next status in current group:", nextStatus);
-          } else if (nextGroupIndex < sampleStatuses.length) {
+          } else if (nextGroupIndex < otherStatuses.length) {
             // No next status in the current group, check the next group
-            const nextGroup = sampleStatuses[nextGroupIndex];
-            if (nextGroup.data.length > 0) {
-              const firstStatusInNextGroup = nextGroup.data[0];
+            const nextGroup = otherStatuses[nextGroupIndex];
+            if (nextGroup.statuses.length > 0) {
+              const firstStatusInNextGroup = nextGroup.statuses[0];
               setSelectedStatus(firstStatusInNextGroup);
               console.log(
                 "First status in next group:",

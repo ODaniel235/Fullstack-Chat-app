@@ -7,11 +7,12 @@ const useThemeStore = create<any>((set, get) => ({
       case "dark":
         document.documentElement.classList.remove("light");
         document.documentElement.classList.add("dark");
-
+        set({ theme: "dark" });
         break;
       case "light":
         document.documentElement.classList.remove("dark");
         document.documentElement.classList.add("light");
+        set({ theme: "light" });
         break;
       default:
         document.documentElement.classList.remove("dark", "light");
@@ -20,6 +21,7 @@ const useThemeStore = create<any>((set, get) => ({
         ).matches;
         document.documentElement.classList.toggle("dark", isDarkMode);
         console.log(isDarkMode);
+        set({ theme: "system" });
         break;
     }
   },

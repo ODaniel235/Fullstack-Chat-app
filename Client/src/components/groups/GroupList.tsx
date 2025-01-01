@@ -131,6 +131,7 @@ export const GroupList: React.FC = () => {
       </motion.button>
 
       <JoinGroupModal
+        group
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
       />

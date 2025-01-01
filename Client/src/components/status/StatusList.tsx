@@ -2,7 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 /* import { useStore } from "../../store/useStore"; */
 import { formatDistanceToNow } from "../../utils/dateUtils";
-import { myStatuses, sampleStatuses } from "../../data";
 import { statusView } from "../../types";
 import useStatusStore from "@/store/useStatusStore";
 
@@ -12,14 +11,13 @@ interface StatusListProps {
 
 export const StatusList: React.FC<StatusListProps> = ({ onStatusClick }) => {
   const { myStatuses, otherStatuses } = useStatusStore();
-  console.log(myStatuses);
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
-      {myStatuses.statuses.length > 0 && (
+      {myStatuses?.statuses.length > 0 && (
         <div className=" overflow-y-hidden">
           <h2 className="text-lg font-semibold mb-3">My Status</h2>
           <div className="space-y-3 overflow-y-hidden">
-            {myStatuses.statuses.map((status) => (
+            {myStatuses?.statuses.map((status) => (
               <motion.div
                 key={status.id}
                 onClick={() => onStatusClick(status)}
@@ -33,7 +31,7 @@ export const StatusList: React.FC<StatusListProps> = ({ onStatusClick }) => {
                         className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl"
                         style={{ backgroundColor: status.backgroundColor }}
                       >
-                        {status.content.substring(0, 1)}
+                        {status.content.substring(0, 4)}
                       </div>
                     ) : status.type == "image" ? (
                       <img

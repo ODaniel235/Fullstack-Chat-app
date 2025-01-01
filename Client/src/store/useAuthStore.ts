@@ -80,7 +80,83 @@ const useAuthStore = create<any>((set, get) => ({
       set({ isLoading: false });
     }
   },
-  checkAuth: async () => {
+  updateData: async (data: any, toast: Function) => {
+    try {
+      const {
+        firstName,
+        lastName,
+        bio,
+        theme,
+        status,
+        receipts,
+        visibility,
+        password,
+        twostep,
+        avatar,
+      } = data;
+
+      const userData = get().userData;
+
+      // Check if no changes were made
+      if (
+        !firstName &&
+        !lastName &&
+        bio === userData.bio &&
+        theme === userData.theme &&
+        status === userData.privacySettings.showOnlineStatus &&
+        receipts === userData.privacySettings.readReceipts &&
+        visibility === userData.privacySettings.profileVisibility &&
+        !password &&
+        twostep === userData.twoFactorEnabled &&
+        !avatar
+      ) {
+        return toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No changes made",
+        });
+      }
+      const dataToUpdate = {
+        firstName,
+        lastName,
+        bio,
+        theme,
+        status,
+        receipts,
+        visibility,
+        password,
+        twostep,
+      };
+      //simulate post request
+      const response = await axiosInstance.put("/auth", dataToUpdate);
+      if (response.status == 200) {
+        console.log("Response===>", response.data);
+        toast({
+          title: "Success",
+          description:
+            response.data.message || "User account updated successfully",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+    }
+  },
+  checkAuth: async (navigate: Function) => {
     try {
       const res = await axiosInstance.get("/auth/check");
       set({ userData: res.data });
@@ -105,6 +181,7 @@ const useAuthStore = create<any>((set, get) => ({
       return allErrors;
     }
   },
+
   connectSocket: () => {
     const { userData } = get();
     if (!userData || get().socket?.connected) return;

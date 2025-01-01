@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Shield, User, Palette, Lock, Camera, Upload } from "lucide-react";
 import { OTPModal } from "../components/modals/OTPModal";
 import { ChangePasswordModal } from "../components/modals/ChangePasswordModal";
 import useAuthStore from "@/store/useAuthStore";
 import useThemeStore from "@/store/useThemeStore";
+import { useToast } from "@/hooks/use-toast";
 
 export const Settings: React.FC = () => {
-  const { userData } = useAuthStore();
+  const { userData, updateData } = useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const { toast } = useToast();
+
   const { changeThemes, theme } = useThemeStore();
   const [basics, setBasics] = useState({
     firstName: "",
@@ -50,6 +53,21 @@ export const Settings: React.FC = () => {
   const changeTheme = (e: React.ChangeEvent<HTMLSelectElement>) => {
     console.log(e.target.value);
     changeThemes(e.target.value);
+  };
+  const handleUpdate = async (basic?: boolean, value?: any, data?: any) => {
+    if (basic) {
+      if (!basics.firstName && !basics.lastName && !basics.bio) {
+        return toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please fill required fields before saving",
+        });
+      } else {
+        await updateData(basics, toast);
+      }
+    }
+    await updateData({ [value]: data }, toast);
+    console.log({ [value]: data });
   };
   return (
     <motion.div
@@ -137,6 +155,23 @@ export const Settings: React.FC = () => {
             />
           </div>
         </div>
+        <AnimatePresence>
+          {(basics.firstName || basics.lastName || basics.bio) && (
+            <motion.div
+              className="mt-4"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <button
+                onClick={() => handleUpdate(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Update Changes
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Personalization Section */}
@@ -149,14 +184,18 @@ export const Settings: React.FC = () => {
           <div>
             <label className="block text-sm font-medium mb-2">Theme</label>
             <select
-              /* 
-              value={"Select theme"} */
               onChange={changeTheme}
               className="w-full p-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600"
             >
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="system">System</option>
+              <option selected={theme == "light"} value="light">
+                Light
+              </option>
+              <option selected={theme == "dark"} value="dark">
+                Dark
+              </option>
+              <option selected={theme == "system"} value="system">
+                System
+              </option>
             </select>
           </div>
         </div>
@@ -174,8 +213,12 @@ export const Settings: React.FC = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={userData?.privacySettings?.showOnlineStatus}
+                defaultChecked={userData?.privacySettings?.showOnlineStatus}
                 className="sr-only peer"
+                name="status"
+                onChange={(e) =>
+                  handleUpdate(false, "status", e.target.checked)
+                }
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
@@ -185,8 +228,12 @@ export const Settings: React.FC = () => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={userData?.privacySettings?.readReceipts}
+                defaultChecked={userData?.privacySettings?.readReceipts}
                 className="sr-only peer"
+                name="receipts"
+                onChange={(e) =>
+                  handleUpdate(false, "receipt", e.target.checked)
+                }
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
@@ -195,7 +242,14 @@ export const Settings: React.FC = () => {
             <label className="block text-sm font-medium mb-2">
               Profile Photo Visibility
             </label>
-            <select className="w-full p-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600">
+            <select
+              name="visibility"
+              className="w-full p-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600"
+              defaultValue={userData.privacySettings.profileVisibility} // Bind the current value
+              onChange={(e) =>
+                handleUpdate(false, "visibility", e.target.value)
+              } // Handle changes here
+            >
               <option value="everyone">Everyone</option>
               <option value="nobody">Nobody</option>
             </select>

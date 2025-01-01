@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import prisma from "../db/db.js";
 import { signToken } from "../utils/utils.js";
+import { v2 as cloudinary } from "cloudinary";
 export const signup = async (req, res) => {
   const { firstname, lastname, email, password, type, avatar, location } =
     req.body;
@@ -183,5 +184,91 @@ export const checkAuth = async (req, res) => {
     res.status(200).json(req.user);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+export const updateUser = async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    bio,
+    theme,
+    status,
+    receipts,
+    visibility,
+    password,
+    twostep,
+    avatar,
+  } = req.body;
+  const user = req.user;
+
+  try {
+    // Ensure at least one field is provided
+    let newAvatar;
+    let passwordToPush;
+    if (newAvatar) {
+      const link = await cloudinary.uploader.upload(avatar, {
+        folder: "images",
+      });
+      newAvatar = link.secure_url;
+    }
+    if (password) {
+      passwordToPush = await bcrypt.hash(password, 12);
+    }
+    // Initialize updateData as an empty object
+    let updateData = {
+      // Add name if firstName or lastName is provided
+      ...((firstName || lastName) && {
+        name: `${firstName || user.name.split(" ")[0]} ${
+          lastName || user.name.split(" ")[1]
+        }`,
+      }),
+
+      // Add avatar if newAvatar is provided
+      ...(newAvatar && { avatar: newAvatar }),
+
+      // Add theme if theme is provided
+      ...(theme && { theme: theme }),
+
+      // Add twoFactorEnabled if twostep is provided
+      ...(twostep !== undefined && { twoFactorEnabled: twostep }),
+
+      // Add password if passwordToPush is provided
+      ...(passwordToPush && { password: passwordToPush }),
+
+      // Add privacySettings if any of status, visibility, or receipts are provided
+      ...((status !== undefined || visibility || receipts !== undefined) && {
+        privacySettings: {
+          readReceipts:
+            receipts !== undefined
+              ? receipts
+              : user.privacySettings.readReceipts,
+          showOnlineStatus:
+            status !== undefined
+              ? status
+              : user.privacySettings.showOnlineStatus,
+          profileVisibility:
+            visibility !== undefined
+              ? visibility
+              : user.privacySettings.profileVisibility,
+        },
+      }),
+    };
+
+    // Log updateData for debugging
+    console.log(updateData);
+
+    // Update user in the database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: updateData,
+    });
+
+    // Return success response
+    return res.status(200).json({ message: "User updated successfully" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred, please try again" });
   }
 };

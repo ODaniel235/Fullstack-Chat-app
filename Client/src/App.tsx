@@ -17,10 +17,12 @@ import useAuthStore from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import useStatusStore from "./store/useStatusStore";
 import { useToast } from "./hooks/use-toast";
+import useThemeStore from "./store/useThemeStore";
 function App() {
   const { toast } = useToast();
   const { userData, checkAuth, isCheckingAuth } = useAuthStore();
   const { myStatuses, fetchStatus } = useStatusStore();
+  const { changeThemes } = useThemeStore();
   useEffect(() => {
     checkAuth();
     if (!myStatuses) {
@@ -28,6 +30,10 @@ function App() {
     }
   }, [checkAuth]);
   console.log(userData);
+  useEffect(() => {
+    if (!userData) return;
+    changeThemes(userData.theme);
+  }, [userData]);
   if (isCheckingAuth && !userData)
     return (
       <div className="flex items-center justify-center h-screen">
