@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { Video, Phone, Mic } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { sampleChats } from "../../data";
 import { useCallStore, useStore } from "../../store/useStore";
 import { AudioRecordingModal } from "./AudioRecordingModal";
@@ -22,16 +22,21 @@ export const ChatWindow: React.FC = () => {
     value: true,
   });
   const navigate = useNavigate();
-  const participantData = selectedChat?.participants?.filter(
-    (p) => p.id !== userData.id
-  )[0];
+  const participantData =
+    selectedChat?.participants?.filter((p) => p.id !== userData.id)[0] ||
+    selectedChat;
   useEffect(() => {
     if (!participantData) {
       navigate("/chats");
       return;
     }
-    fetchMessages(participantData.id, toast, navigate);
-  }, []);
+    fetchMessages(participantData.id, toast, navigate).catch((err) => {
+      console.error("Error fetching messages:", err);
+      navigate("/chats");
+    });
+  }, [participantData]);
+
+  console.log(participantData);
   const startCall = (type: string) => {
     if (type == "video") {
       setCall(
@@ -62,12 +67,13 @@ export const ChatWindow: React.FC = () => {
       <div className="p-4 border-b flex items-center justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center space-x-3">
           <img
-            onClick={() =>
-              navigate(`/user/${participantData?.id}`, {
-                state: participantData,
-              })
+            onClick={() => {
+              navigate(`/user/${participantData?.id}`);
+            }}
+            src={
+              participantData?.avatar ||
+              "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg"
             }
-            src={participantData?.avatar}
             alt="Contact"
             className="w-10 h-10 rounded-full hover:cursor-pointer"
           />
@@ -127,7 +133,7 @@ export const ChatWindow: React.FC = () => {
           >
             <Video className="w-5 h-5" />
           </button>
-          <MessageInput />
+          <MessageInput participantId={participantData.id} />
         </div>
       </div>
     </div>

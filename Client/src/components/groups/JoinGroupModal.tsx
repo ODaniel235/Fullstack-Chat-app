@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useStore } from "../../store/useStore";
+import useChatStore from "@/store/useChatStore";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface JoinGroupModalProps {
   isOpen: boolean;
@@ -15,18 +17,12 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
   group,
 }) => {
   const [id, setId] = useState("");
-
+  const { fetchUser } = useChatStore();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      // TODO: Implement group joining functionality
-      onClose();
-    } catch (error) {
-      console.error("Failed to join group:", error);
-      // TODO: Show error toast
-    }
+    await fetchUser(group, onClose, id, toast, navigate, e);
   };
-
   return (
     <AnimatePresence>
       {isOpen && (

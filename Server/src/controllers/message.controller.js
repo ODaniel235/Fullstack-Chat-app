@@ -80,6 +80,20 @@ export const sendMessage = async (req, res) => {
     const allConvos = await prisma.conversation.findMany({
       where: {
         participantIds: {
+          hasSome: [receiverId],
+        },
+      },
+      include: {
+        participants: {
+          orderBy: {
+            updatedAt: "asc",
+          },
+        },
+      },
+    });
+    const myConvo = await prisma.conversation.findMany({
+      where: {
+        participantIds: {
           hasSome: [senderId],
         },
       },
@@ -90,6 +104,10 @@ export const sendMessage = async (req, res) => {
           },
         },
       },
+    });
+    io.to(getUserSocket(id)).emit("newMessage", {
+      conversation,
+      allConvos: myConvo,
     });
     //Socket function goes here lol
     conversation.participantIds.forEach((id) => {
@@ -141,6 +159,7 @@ export const fetchMessages = async (req, res) => {
 };
 export const fetchConversations = async (req, res) => {
   const userId = req.user.id;
+
   try {
     const allConvos = await prisma.conversation.findMany({
       where: {
@@ -149,15 +168,24 @@ export const fetchConversations = async (req, res) => {
         },
       },
       include: {
-        participants: {
-          orderBy: {
-            updatedAt: "asc",
-          },
-        },
+        participants: true, // Fetch all participants' data
       },
     });
+
     if (!allConvos) return res.status(404).json([]);
-    res.status(200).json({ conversations: allConvos });
+
+    // Filter participants' avatars based on privacySettings
+    const processedConvos = allConvos.map((convo) => ({
+      ...convo,
+      participants: convo.participants.map((participant) => {
+        if (participant.privacySettings?.profileVisibility === "everyone") {
+          return { ...participant, avatar: participant.avatar };
+        }
+        return { ...participant, avatar: null }; // Hide avatar if privacy is not "everyone"
+      }),
+    }));
+
+    res.status(200).json({ conversations: processedConvos });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

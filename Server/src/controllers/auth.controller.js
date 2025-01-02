@@ -258,7 +258,34 @@ export const updateUser = async (req, res) => {
       where: { id: user.id },
       data: updateData,
     });
+    const newStatusData = await prisma.status.update({
+      where: { userId: user.id },
+      data: {
+        profilePicture: updatedData.avatar,
+        poster: updateData.name,
+      },
+      include: {
+        statuses: true,
+      },
+    });
     io.to(getUserSocket(user.id)).emit("updatedProfile", updatedData);
+    io.to(getUserSocket(user.id)).emit("updatedStatus", newStatusData);
+    const conversationsToFind = await prisma.conversation.findMany({
+      where: { participantIds: { hasSome: [user.id] } },
+    });
+    const idsToFind = [];
+    conversationsToFind.forEach((convo) => {
+      const otherParticipants = convo.participantIds.filter(
+        (id) => id !== user.id
+      );
+      idsToFind.push(...otherParticipants); // Add other participant IDs to idsToFind
+    });
+    idsToFind.forEach((id) => {
+      io.to(getUserSocket(id)).emit("userUpdated", {
+        updatedData,
+        newStatusData,
+      });
+    });
     // Return success response
     return res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
@@ -266,5 +293,41 @@ export const updateUser = async (req, res) => {
     return res
       .status(500)
       .json({ error: "An error occurred, please try again" });
+  }
+};
+export const getUser = async (req, res) => {
+  const { email } = req.query;
+  try {
+    console.log(req.query);
+    if (!email)
+      return res.status(400).json({ error: "Email is a required field" });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        avatar: true,
+        name: true,
+        blockedUsers: true,
+        createdAt: true,
+        email: true,
+        id: true,
+        location: true,
+        password: false,
+        phone: true,
+        privacySettings: true,
+      },
+    });
+    let processedUser = {
+      ...user,
+      ...(user.privacySettings.profileVisibility == "everyone"
+        ? {
+            avatar: user.avatar,
+          }
+        : { avatar: null }),
+    };
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.status(200).json({ user: processedUser });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

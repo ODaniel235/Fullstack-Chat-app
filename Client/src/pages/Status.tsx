@@ -136,7 +136,10 @@ export const Status: React.FC = () => {
         <h1 className="text-xl font-semibold">Status Updates</h1>
       </div>
 
-      <StatusList onStatusClick={onStatusClick} />
+      <StatusList
+        openCreateModal={() => setShowCreateModal(true)}
+        onStatusClick={onStatusClick}
+      />
 
       <motion.button
         whileHover={{ scale: 1.1 }}

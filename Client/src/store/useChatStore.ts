@@ -2,6 +2,8 @@ import { Chat } from "@/types";
 import axiosInstance from "@/utils/axios";
 import { AxiosError } from "axios";
 import { create } from "zustand";
+import useAuthStore from "./useAuthStore";
+import React from "react";
 interface useChatsStore {
   chats: Chat[];
 }
@@ -11,12 +13,52 @@ const useChatStore = create<any>((set, get) => ({
   selectedChat: [],
   isMessagesLoading: true,
   messages: [],
+  userSearch: null,
+  setUserSearch: (data) => {
+    set({ userSearc: data });
+  },
   setMessages: (data) => {
-    set({ messages: data });
+    set((state) => {
+      const chatExists = state.chats.some((convo) => convo.id === data.id);
+
+      if (chatExists) {
+        // Update the existing chat
+        const updatedChats = state.chats.map((convo) => {
+          if (convo.id === data.id) {
+            return { ...convo, messages: data.messages };
+          }
+          return convo;
+        });
+        return { chats: updatedChats };
+      } else {
+        // Add the new chat
+        const newChat = {
+          id: data.id,
+          messages: data.messages,
+          ...data.otherProperties,
+        }; // Include any other chat properties
+        return { chats: [...state.chats, newChat] };
+      }
+    });
   },
   setChats: (data) => {
     set({ chats: data });
   },
+  editUser: (data) => {
+    set((state) => {
+      const updatedChats = state.chats.map((chat) => {
+        const updatedParticipants = chat.participants.map((p) =>
+          p.id === useAuthStore.getState().userData.id ? { ...p, ...data } : p
+        );
+        return { ...chat, participants: updatedParticipants };
+      });
+
+      return {
+        chats: updatedChats,
+      };
+    });
+  },
+
   fetchConversation: async (toast: Function) => {
     try {
       const response = await axiosInstance.get("/message", {
@@ -60,6 +102,10 @@ const useChatStore = create<any>((set, get) => ({
       }
     } catch (error) {
       console.log("Error occoured===:>", error);
+      if (error instanceof AxiosError) {
+        if (error.status == 404) return;
+      }
+
       toast({
         title: "Error",
         variant: "destructive",
@@ -69,10 +115,15 @@ const useChatStore = create<any>((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
-  handleChatClick: (id: string) => {
+  handleChatClick: (id: string, data?: any) => {
     const chat = get().chats;
     const filteredChat = chat.filter((p) => p.id == id)[0];
+    if (id == "new") {
+      set({ selectedChat: data });
+      return;
+    }
     set({ selectedChat: filteredChat });
+    return;
   },
   handleMessage: async (
     type: string,
@@ -92,6 +143,61 @@ const useChatStore = create<any>((set, get) => ({
         console.log("Message sent:", response.data.data.newMessage);
         wipeMessage();
       }
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+        return err;
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+    }
+  },
+  fetchUser: async (
+    group: boolean,
+    onClose: Function,
+    email: any,
+    toast: Function,
+    navigate: Function,
+    e?: React.FormEvent
+  ) => {
+    e.preventDefault();
+    try {
+      let data;
+      if (!group) {
+        const response = await axiosInstance.get(`/auth/?email=${email}`);
+        console.log(response);
+        if (response.status == 200) {
+          const blocked = response.data.user.blockedUsers.some(
+            (id) => id == useAuthStore.getState().userData.id
+          );
+          console.log(blocked);
+          if (blocked) {
+            toast({
+              variant: "destructive",
+              title: "Oops",
+              description: "You have been blocked by this user lol",
+            });
+            onClose();
+            return;
+          }
+          set({ userSearch: response.data.user });
+          console.log("Search ===>", response.data.user);
+          navigate(`/user/${response.data.user.id}`);
+        }
+      }
+      // TODO: Implement group joining functionality
+      onClose();
     } catch (error) {
       console.log(error);
       if (error instanceof AxiosError) {

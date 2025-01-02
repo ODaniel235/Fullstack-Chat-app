@@ -16,10 +16,7 @@ export const createStatus = async (req, res) => {
 
     let contentData = content;
     if (type !== "text") {
-      const newContent = await cloudinary.uploader.upload(content, {
-        folder: `${type}s`,
-      });
-      contentData = newContent.secure_url;
+      contentData = await uploa
     }
     const newStatusData = await prisma.statusData.create({
       data: {

@@ -71,6 +71,7 @@ export const ChatList: React.FC = () => {
               const otherParticipant = chat?.participants?.filter(
                 (p) => p.id !== userData.id
               )[0];
+              console.log("Participant===>", otherParticipant);
               const lastMessage = chat.lastMessage;
               return (
                 <motion.div
@@ -82,7 +83,7 @@ export const ChatList: React.FC = () => {
                   whileHover={{ scale: 1.01 }}
                 >
                   <div className="flex items-center space-x-3">
-                    {otherParticipant.privacySettings.profileVisibility ? (
+                    {otherParticipant.avatar ? (
                       <img
                         src={otherParticipant.avatar}
                         alt={otherParticipant.name || "User Avatar"}
@@ -90,9 +91,7 @@ export const ChatList: React.FC = () => {
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl bg-blue-600">
-                        {otherParticipant.name
-                          ?.substring(0, 1)
-                          ?.toUpperCase() || "?"}
+                        {otherParticipant.name?.substring(0, 1)?.toUpperCase()}
                       </div>
                     )}
 

@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MainLayout } from "./components/layout/MainLayout";
 import { ChatWindow } from "./components/chat/ChatWindow";
@@ -25,12 +31,15 @@ function App() {
   const { myStatuses, fetchStatus } = useStatusStore();
   const { listenToSocket } = useSocketStore();
   const { changeThemes } = useThemeStore();
+
   useEffect(() => {
     checkAuth();
     if (!myStatuses) {
-      fetchStatus(toast);
+      if (location.pathname !== "/signin" && location.pathname !== "/signup") {
+        fetchStatus(toast);
+      }
     }
-  }, [checkAuth]);
+  }, [checkAuth, location.pathname]);
 
   useEffect(() => {
     if (!userData) return;

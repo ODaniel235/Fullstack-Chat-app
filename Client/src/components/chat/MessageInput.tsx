@@ -5,8 +5,10 @@ import { useToast } from "@/hooks/use-toast";
 import useChatStore from "@/store/useChatStore";
 import useAuthStore from "@/store/useAuthStore";
 import axiosInstance from "@/utils/axios";
-
-export const MessageInput: React.FC = () => {
+interface MessageInputProp {
+  participantId: any;
+}
+export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -31,10 +33,7 @@ export const MessageInput: React.FC = () => {
       setIsSending(false);
       return;
     }
-    const participantId = selectedChat?.participants?.filter(
-      (p) => p.id !== userData.id
-    )[0].id;
-    console.log(participantId);
+
     await handleMessage("text", participantId, message, toast, wipeMessage);
     setIsSending(false);
   };

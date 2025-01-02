@@ -15,6 +15,7 @@ const useAuthStore = create<any>((set, get) => ({
   setUser: (data) => {
     set({ userData: data });
   },
+
   signup: async (data: any, navigate: Function, toast: Function) => {
     try {
       set({ isCheckingAuth: true });

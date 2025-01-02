@@ -8,9 +8,14 @@ const useStatusStore = create<any>((set, get) => ({
   setMyStatus: (data) => {
     set({ myStatuses: data });
   },
-  /*   setOther:(data)=>{
-    set({myStatuses:})
-  }, */
+  setOther: (data) => {
+    set((state) => {
+      const updatedStatuses = state.otherStatuses.map((status) =>
+        status.userId === data.userId ? { ...status, ...data } : status
+      );
+    });
+  },
+
   fetchStatus: async (toast: Function) => {
     try {
       const response = await axiosInstance.get("/status/");
