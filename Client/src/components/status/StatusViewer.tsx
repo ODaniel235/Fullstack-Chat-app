@@ -37,7 +37,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   const [progress, setProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0); // Track video duration in seconds
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
+  const { socket } = useAuthStore();
   const modalRef = useRef<HTMLDivElement>(null); // Create a ref for the modal container
   const [isLiked, setIsLiked] = useState<boolean>(statusData.liked || false);
   const [paused, setPaused] = useState<boolean>(false);
@@ -153,7 +153,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   if (!statusData) return null;
 
   const handleLike = () => {
-    setIsLiked(!isLiked);
+    socket.emit("likedStatus", { id: statusData.id, });
   };
 
   const handleReply = () => {
@@ -162,7 +162,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
     setReply("");
   };
   const statusIndex = otherStatuses.findIndex((s) =>
-    s.data.some((d) => d.id === statusData?.id)
+    s.statuses.some((d) => d.id === statusData?.id)
   );
   return (
     <motion.div
@@ -234,37 +234,21 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
           {/* Navigation Buttons */}
           <button
             onClick={() => {
-              const isDesktop = window.innerWidth;
-              !isDesktop && handlePrevious(statusData.userId == userData.id);
-              !isDesktop && resetInterval();
+              handlePrevious(statusData.userId === userData.id); // Trigger the previous function regardless of screen size
+              resetInterval(); // Reset the interval on click
             }}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full bg-black/50 hover:bg-white/20 transition shadow-md"
           >
-            <ChevronLeft
-              onClick={() => {
-                const isDesktop = window.innerWidth;
-                isDesktop && handlePrevious(statusData.userId == userData.id);
-                isDesktop && resetInterval();
-              }}
-              className="hidden md:flex w-6 h-6"
-            />
+            <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={() => {
-              const isDesktop = window.innerWidth;
-              !isDesktop && handleNext(statusData.userId == userData.id);
-              !isDesktop && resetInterval();
+              handleNext(statusData.userId === userData.id); // Trigger the next function regardless of screen size
+              resetInterval(); // Reset the interval on click
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full bg-black/50 hover:bg-white/20 transition shadow-md"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full bg-black/50 h-fill hover:bg-white/20 transition shadow-md"
           >
-            <ChevronRight
-              onClick={() => {
-                const isDesktop = window.innerWidth;
-                isDesktop && handleNext(statusData.userId == userData.id);
-                isDesktop && resetInterval();
-              }}
-              className="hidden md:flex w-6 h-6"
-            />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
 

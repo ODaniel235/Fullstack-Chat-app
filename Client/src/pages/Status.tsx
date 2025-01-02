@@ -72,6 +72,7 @@ export const Status: React.FC = () => {
       const nextStatus =
         myStatuses.statuses.findIndex((s) => s.id == selectedStatus?.id) + 1;
       setSelectedStatus(myStatuses.statuses[nextStatus]);
+
     } else {
       // Handling "sampleStatuses"
       const statusIndex = otherStatuses.findIndex((s) =>

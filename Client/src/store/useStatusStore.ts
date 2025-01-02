@@ -4,7 +4,7 @@ import { create } from "zustand";
 
 const useStatusStore = create<any>((set, get) => ({
   myStatuses: null,
-  otherStatuses: null,
+  otherStatuses: [],
   setMyStatus: (data) => {
     set({ myStatuses: data });
   },

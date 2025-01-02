@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 import http from "http";
 import express from "express";
+import prisma from "../db/db.js";
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,15 @@ io.on("connection", (socket) => {
   {
     /* Disconnect Function */
   }
+  socket.on("likedStatus", async (data) => {
+    console.log(data);
+    const statusToLike = await prisma.statusData.update({
+      where: { id: data.id },
+      data: {
+        likes: likes + 1,
+      },
+    });
+  });
   socket.on("disconnect", () => {
     console.log("User disconnected", userId);
     delete activeSocketMap[userId];

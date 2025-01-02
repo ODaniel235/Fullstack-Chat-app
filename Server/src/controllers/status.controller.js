@@ -16,7 +16,7 @@ export const createStatus = async (req, res) => {
 
     let contentData = content;
     if (type !== "text") {
-      contentData = await uploa
+      contentData = await uploa;
     }
     const newStatusData = await prisma.statusData.create({
       data: {
@@ -146,18 +146,20 @@ export const fetchStatuses = async (req, res) => {
     const conversationsToFind = await prisma.conversation.findMany({
       where: { participantIds: { hasSome: [user.id] } },
     });
-    const idsToFind = [];
+    const idsToFind = new Set();
     conversationsToFind.forEach((convo) => {
       const otherParticipants = convo.participantIds.filter(
         (id) => id !== user.id
       );
-      idsToFind.push(...otherParticipants); // Add other participant IDs to idsToFind
+      otherParticipants.forEach((id) => idsToFind.add(id)); // Adds IDs to the Set
     });
-    const allStatuses = [];
-    idsToFind.forEach(async (id) => {
+
+
+    // Use Promise.all to handle the async operations correctly
+    const statusesPromises = [...idsToFind].map(async (id) => {
       const newStatus = await prisma.status.findFirst({
         where: {
-          userId: id,
+          userId: id, // Ensure to pass `id` directly as you're filtering in participantIds
         },
         include: {
           statuses: {
@@ -167,10 +169,17 @@ export const fetchStatuses = async (req, res) => {
           },
         },
       });
-      allStatuses.push(newStatus);
+      return newStatus; // Return the status for later use
     });
 
-    res.status(200).json({ myStatus: statuses, allStatuses });
+    const fetchedStatuses = await Promise.all(statusesPromises);
+
+    // Now filter for unique statuses if needed (optional)
+    const uniqueStatuses = fetchedStatuses.filter((status, index, self) => {
+      return index === self.findIndex((s) => s.userId === status.userId); // Assuming `userId` is unique
+    });
+
+    res.status(200).json({ myStatus: statuses, allStatuses: uniqueStatuses });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
