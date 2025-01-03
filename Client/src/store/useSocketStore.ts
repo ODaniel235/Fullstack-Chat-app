@@ -33,7 +33,7 @@ const useSocketStore = create<any>((set, get) => ({
         }
       });
       socket.on("userUpdated", (data: any) => {
-        /*         useStatusStore.getState().setOther(data.newStatusData); */
+        useStatusStore.getState().editStatus(data.newStatusData);
         console.log(data);
         useChatStore.getState().editUser(data.updatedData);
       });

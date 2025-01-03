@@ -35,12 +35,18 @@ const useStatusStore = create<any>((set, get) => ({
   },
   editStatus: (data) => {
     set((state) => {
-      const userStatus = state.otherStatuses.map((status) => {
-        return status.userId == data.userId ? { ...status, ...data } : status;
+      const updatedStatuses = state.otherStatuses.map((status) => {
+        if (status.userId === data.userId) {
+          // Spread the existing status and override only the fields present in data
+          return { ...status, ...data };
+        }
+        return status;
       });
-      return { otherStatuses: userStatus };
+
+      return { otherStatuses: updatedStatuses };
     });
   },
+
   fetchStatus: async (toast: Function) => {
     try {
       const response = await axiosInstance.get("/status/");

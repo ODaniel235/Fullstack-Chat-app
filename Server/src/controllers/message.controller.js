@@ -86,9 +86,12 @@ export const sendMessage = async (req, res) => {
       include: {
         participants: {
           orderBy: {
-            updatedAt: "asc",
+            updatedAt: "desc",
           },
         },
+      },
+      orderBy: {
+        updatedAt: "desc",
       },
     });
     const myConvo = await prisma.conversation.findMany({
@@ -100,12 +103,15 @@ export const sendMessage = async (req, res) => {
       include: {
         participants: {
           orderBy: {
-            updatedAt: "asc",
+            updatedAt: "desc",
           },
         },
       },
+      orderBy: {
+        updatedAt: "desc",
+      },
     });
-    io.to(getUserSocket(id)).emit("newMessage", {
+    io.to(getUserSocket(senderId)).emit("newMessage", {
       conversation,
       allConvos: myConvo,
     });
@@ -169,6 +175,9 @@ export const fetchConversations = async (req, res) => {
       },
       include: {
         participants: true, // Fetch all participants' data
+      },
+      orderBy: {
+        updatedAt: "desc",
       },
     });
 

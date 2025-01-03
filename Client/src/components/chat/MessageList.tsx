@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Message } from "../../types";
 import VideoMessage from "./VideoMessage";
@@ -12,6 +12,14 @@ export const MessageList: React.FC = () => {
   const { userData } = useAuthStore();
   const { messages, isMessagesLoading } = useChatStore();
   const [showStartChat, setShowStartChat] = useState(false);
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isMessagesLoading) return;
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isMessagesLoading]);
 
   useEffect(() => {
     if (!isMessagesLoading && messages.length === 0) {
@@ -76,6 +84,8 @@ export const MessageList: React.FC = () => {
               Start a chat to see messages here.
             </div>
           )}
+      {/* Message end ref should be on the last element */}
+      <div ref={messageEndRef} />
     </div>
   );
 };

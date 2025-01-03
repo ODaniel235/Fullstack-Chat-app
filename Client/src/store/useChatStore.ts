@@ -18,31 +18,13 @@ const useChatStore = create<any>((set, get) => ({
     set({ userSearc: data });
   },
   setMessages: (data) => {
-    set((state) => {
-      const chatExists = state.chats.some((convo) => convo.id === data.id);
-
-      if (chatExists) {
-        // Update the existing chat
-        const updatedChats = state.chats.map((convo) => {
-          if (convo.id === data.id) {
-            return { ...convo, messages: data.messages };
-          }
-          return convo;
-        });
-        return { chats: updatedChats };
-      } else {
-        // Add the new chat
-        const newChat = {
-          id: data.id,
-          messages: data.messages,
-          ...data.otherProperties,
-        }; // Include any other chat properties
-        return { chats: [...state.chats, newChat] };
-      }
-    });
+    set({ messages: data });
   },
+
   setChats: (data) => {
-    set({ chats: data });
+    set({
+      chats: data,
+    });
   },
 
   fetchConversation: async (toast: Function) => {
