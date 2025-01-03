@@ -268,6 +268,15 @@ export const updateUser = async (req, res) => {
         statuses: true,
       },
     });
+    let processedUser = {
+      ...updatedData,
+      ...(updatedData.privacySettings.profileVisibility == "everyone"
+        ? {
+            avatar: updatedData.avatar,
+          }
+        : { avatar: null }),
+    };
+
     io.to(getUserSocket(user.id)).emit("updatedProfile", updatedData);
     io.to(getUserSocket(user.id)).emit("updatedStatus", newStatusData);
     const conversationsToFind = await prisma.conversation.findMany({
@@ -282,7 +291,7 @@ export const updateUser = async (req, res) => {
     });
     idsToFind.forEach((id) => {
       io.to(getUserSocket(id)).emit("userUpdated", {
-        updatedData,
+        updatedData: processedUser,
         newStatusData,
       });
     });

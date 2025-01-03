@@ -8,7 +8,7 @@ import useThemeStore from "@/store/useThemeStore";
 import { useToast } from "@/hooks/use-toast";
 
 export const Settings: React.FC = () => {
-  const { userData, updateData, handleFileUpload } = useAuthStore();
+  const { userData, updateData, handleUpdateData } = useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { toast } = useToast();
@@ -38,7 +38,7 @@ export const Settings: React.FC = () => {
     }
   };
   const handleImageUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileUpload(e, "Profile", toast);
+    handleUpdateData(e, toast);
   };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -66,7 +66,6 @@ export const Settings: React.FC = () => {
       }
     }
     await updateData({ [value]: data }, toast);
-  
   };
   return (
     <motion.div

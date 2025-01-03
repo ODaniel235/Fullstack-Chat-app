@@ -162,12 +162,8 @@ const useAuthStore = create<any>((set, get) => ({
       }
     }
   },
-  handleFileUpload: async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: string,
-    toast: Function
-  ) => {
-    const file = e.target.files?.[0]; // Get the first selected file
+  handleFileUpload: async (value: any, toast: Function) => {
+    const file = value; // Get the first selected file
     if (!file) {
       toast({
         variant: "destructive",
@@ -177,52 +173,44 @@ const useAuthStore = create<any>((set, get) => ({
       return;
     }
 
-    const sizeInMb = (file.size / (1024 * 1024)).toFixed(2); // File size in MB
-
     try {
       const reader = new FileReader();
 
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
+      return new Promise((resolve, reject) => {
+        reader.onloadend = async () => {
+          const base64String = reader.result as string;
 
-        // Calculate Base64 size
-        const baseSize = getBase64Size(base64String);
+          // Calculate Base64 size
+          const baseSize = getBase64Size(base64String);
 
-        // Check if the file exceeds the size limit
-        if (parseFloat(sizeInMb) > 50 || parseFloat(baseSize.sizeInMB) > 50) {
+          // Check if the file exceeds the size limit
+          if (parseFloat(baseSize.sizeInMB) > 50) {
+            toast({
+              variant: "destructive",
+              title: "File too big",
+              description: `Selected file is ${baseSize.sizeInMB}MB and exceeds the 50MB limit.`,
+            });
+            reject("File too large");
+            return;
+          }
+
+          resolve(base64String); // Successfully resolve the Base64 string
+        };
+
+        // Error handling for the reader
+        reader.onerror = (error) => {
+          console.error(error);
           toast({
             variant: "destructive",
-            title: "File too big",
-            description: `Selected file is ${baseSize.sizeInMB}MB and exceeds the 50MB limit.`,
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
           });
-          return;
-        }
+          reject("File read error");
+        };
 
-        // Proceed with uploading or other tasks
-        try {
-          await get().updateData({ avatar: base64String }, toast);
-        } catch (error) {
-          if (error instanceof AxiosError) {
-            const err =
-              error?.response?.data?.error ||
-              "An error occurred, please try again.";
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: err,
-            });
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: "An error occurred while uploading the file.",
-            });
-          }
-        }
-      };
-
-      // Read the file as a data URL (Base64)
-      reader.readAsDataURL(file);
+        // Read the file as a data URL (Base64)
+        reader.readAsDataURL(file);
+      });
     } catch (error) {
       console.error(error);
       toast({
@@ -233,6 +221,36 @@ const useAuthStore = create<any>((set, get) => ({
     }
   },
 
+  handleUpdateData: async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    toast: Function
+  ) => {
+    try {
+      const base64string = await get().handleFileUpload(
+        e.target.files?.[0],
+        toast
+      );
+      console.log(base64string);
+      await get().updateData({ avatar: base64string }, toast);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error ||
+          "An error occurred, please try again.";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred while uploading the file.",
+        });
+      }
+    }
+  },
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");

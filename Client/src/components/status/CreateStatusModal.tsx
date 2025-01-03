@@ -4,6 +4,7 @@ import { Image, Video, Type, X, Loader } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import useStatusStore from "@/store/useStatusStore";
 import { useToast } from "@/hooks/use-toast";
+import useAuthStore from "@/store/useAuthStore";
 
 interface CreateStatusModalProps {
   isOpen: boolean;
@@ -21,13 +22,18 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
   const [backgroundColor, setBackgroundColor] = useState("#6B7280");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { handleFileUpload } = useAuthStore();
+  const [inputData, setInputData] = useState<string>("");
   const { createStatus } = useStatusStore();
   const { toast } = useToast();
   const handleSubmit = async () => {
-    if (!content) return;
+    const shouldReturn = statusType == "text" ? !content : !inputData;
+    if (shouldReturn) return;
     setIsLoading(true);
-
-    await createStatus(statusType, content, toast, backgroundColor);
+    const data = statusType == "text" ? content : inputData;
+    const bgColor = statusType == "text" ? backgroundColor : null;
+    console.log(data);
+    await createStatus(statusType, data, toast, null);
 
     onClose();
     setContent("");
@@ -35,15 +41,9 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
     setStatusType("text");
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setContent(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const toBase = await handleFileUpload(e.target?.files?.[0]);
+    setInputData(toBase);
   };
 
   return (
@@ -84,7 +84,8 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
                   <Type className="w-5 h-5" />
                   <span>Text</span>
                 </button>
-                <button
+                <label
+                  htmlFor="image"
                   onClick={() => {
                     setStatusType("image");
                     fileInputRef.current?.click();
@@ -97,8 +98,9 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
                 >
                   <Image className="w-5 h-5" />
                   <span>Image</span>
-                </button>
-                <button
+                </label>
+                <label
+                  htmlFor="video"
                   onClick={() => {
                     setStatusType("video");
                     fileInputRef.current?.click();
@@ -111,14 +113,23 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
                 >
                   <Video className="w-5 h-5" />
                   <span>Video</span>
-                </button>
+                </label>
               </div>
 
               <input
                 type="file"
-                ref={fileInputRef}
+                id="image"
                 className="hidden"
-                accept={statusType === "image" ? "image/*" : "video/*"}
+                name="image"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <input
+                type="file"
+                id="video"
+                className="hidden"
+                name="video"
+                accept="video/*"
                 onChange={handleFileChange}
               />
 
@@ -153,39 +164,39 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
                 </>
               ) : (
                 <div className="aspect-square mb-4 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  {content ? (
+                  {inputData ? (
                     statusType === "image" ? (
                       <img
-                        src={content}
+                        src={inputData}
                         alt="Status preview"
                         className="max-h-full rounded-lg"
                       />
                     ) : (
                       <video
-                        src={content}
+                        src={inputData}
                         className="max-h-full rounded-lg"
                         controls
                       />
                     )
                   ) : (
-                    <div className="text-center">
+                    <label htmlFor={statusType} className="text-center">
                       <p className="text-gray-500 mb-2">
                         No {statusType} selected
                       </p>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
+                      <label
+                        htmlFor={statusType}
                         className="text-blue-500 hover:text-blue-600"
                       >
                         Click to upload
-                      </button>
-                    </div>
+                      </label>
+                    </label>
                   )}
                 </div>
               )}
 
               <button
                 onClick={handleSubmit}
-                disabled={!content}
+                disabled={statusType == "text" ? !content : !inputData}
                 className="w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (

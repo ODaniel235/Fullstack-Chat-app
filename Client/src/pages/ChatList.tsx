@@ -32,7 +32,7 @@ export const ChatList: React.FC = () => {
     handleChatClick(chatId);
     navigate(`/chat/${chatId}`);
   };
-  console.log(mappedChats);
+
   const filterChats = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
 
@@ -67,11 +67,9 @@ export const ChatList: React.FC = () => {
         {chats.length > 0 ? (
           <div className="divide-y dark:divide-gray-700">
             {mappedChats.map((chat: any) => {
-              console.log(chat);
               const otherParticipant = chat?.participants?.filter(
                 (p) => p.id !== userData.id
               )[0];
-              console.log("Participant===>", otherParticipant);
               const lastMessage = chat.lastMessage;
               return (
                 <motion.div
@@ -94,7 +92,6 @@ export const ChatList: React.FC = () => {
                         {otherParticipant.name?.substring(0, 1)?.toUpperCase()}
                       </div>
                     )}
-
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
                         <h3 className="font-semibold">

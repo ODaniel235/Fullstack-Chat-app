@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 /* import { useStore } from "../../store/useStore"; */
-import { formatDistanceToNow } from "../../utils/dateUtils";
+import { TimeAgo } from "../../utils/dateUtils";
 import { statusView } from "../../types";
 import useStatusStore from "@/store/useStatusStore";
 
@@ -15,7 +15,6 @@ export const StatusList: React.FC<StatusListProps> = ({
   openCreateModal,
 }) => {
   const { myStatuses, otherStatuses } = useStatusStore();
-  console.log(otherStatuses);
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
       <div className=" overflow-y-hidden">
@@ -24,7 +23,7 @@ export const StatusList: React.FC<StatusListProps> = ({
           <motion.div
             onClick={() => {
               if (myStatuses.statuses.length > 0) {
-                onStatusClick(myStatuses.userId);
+                onStatusClick(myStatuses.statuses[0]);
               } else {
                 openCreateModal(true);
               }
@@ -84,12 +83,16 @@ export const StatusList: React.FC<StatusListProps> = ({
                   <div>
                     <p className="font-semibold">My Status</p>
                     <p className="text-sm text-gray-500">
-                      {myStatuses?.statuses.length > 0
-                        ? formatDistanceToNow(
+                      {myStatuses?.statuses.length > 0 ? (
+                        <TimeAgo
+                          timestamp={
                             myStatuses.statuses[myStatuses.statuses.length - 1]
                               .timestamp
-                          )
-                        : "Update Status"}
+                          }
+                        />
+                      ) : (
+                        "Update Status"
+                      )}
                     </p>
                   </div>
                   {myStatuses?.statuses.length > 0 && (
@@ -179,12 +182,12 @@ export const StatusList: React.FC<StatusListProps> = ({
                       <div>
                         <p className="font-semibold">{status.poster}</p>
                         <p className="text-sm text-gray-500">
-                          {formatDistanceToNow(
-                            status.statuses.length > 0 &&
-                              status.statuses &&
+                          <TimeAgo
+                            timestamp={
                               status.statuses[status.statuses.length - 1]
                                 .timestamp
-                          )}
+                            }
+                          />
                         </p>
                       </div>
                     </div>

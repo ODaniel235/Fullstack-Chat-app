@@ -42,9 +42,11 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   const [isLiked, setIsLiked] = useState<boolean>(statusData.liked || false);
   const [paused, setPaused] = useState<boolean>(false);
   if (!statusData) return;
-
   useEffect(() => {
-    setCurrentIndex(otherStatuses.findIndex((s) => s.userId == statusData.id));
+    if (!statusData) return;
+    setCurrentIndex(
+      otherStatuses.findIndex((s) => s.userId == statusData.userId)
+    );
     if (paused) return; // Skip setting up the interval if paused
     const videoElement = videoRef.current;
     if (statusData.type === "video") {
@@ -90,19 +92,21 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
               const statusIndex = myStatuses.statuses.findIndex(
                 (s) => s.id === statusData.id
               );
+              console.log(statusIndex, myStatuses.statuses.length);
               if (statusIndex < myStatuses.statuses.length - 1) {
                 setCurrentIndex((prevIndex) => prevIndex + 1);
-                handleNext(statusData.userId === "1");
+                handleNext(statusData.userId === userData.id);
                 return 0;
               } else {
+                console.log("Closing1");
                 onClose();
                 clearInterval(interval);
                 return prev;
               }
             } else {
-              if (currentIndex < otherStatuses.length - 1) {
+              if (currentIndex < otherStatuses?.length) {
                 setCurrentIndex((prevIndex) => prevIndex + 1);
-                handleNext(statusData.userId === "1");
+                handleNext(statusData.userId === userData.id);
                 return 0;
               } else {
                 onClose();
@@ -153,7 +157,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   if (!statusData) return null;
 
   const handleLike = () => {
-    socket.emit("likedStatus", { id: statusData.id, });
+    socket.emit("likedStatus", { id: statusData.id });
   };
 
   const handleReply = () => {

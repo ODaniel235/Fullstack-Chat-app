@@ -4,9 +4,9 @@ import { v2 as cloudinary } from "cloudinary";
 import { disconnect } from "mongoose";
 import cron from "node-cron";
 import { getUserSocket, io } from "../socket/socket.js";
+import uploadBase64 from "../utils/cloudinary.js";
 export const createStatus = async (req, res) => {
   const userId = req.user.id;
-  console.log(req.user.id);
   const { type, content, backgroundColor } = req.body;
   try {
     if (!type || !content)
@@ -16,13 +16,19 @@ export const createStatus = async (req, res) => {
 
     let contentData = content;
     if (type !== "text") {
-      contentData = await uploa;
+      try {
+        contentData = await uploadBase64(content, `${type}s`);
+      } catch (uploadError) {
+        return res
+          .status(500)
+          .json({ error: "File upload failed", details: uploadError.message });
+      }
     }
     const newStatusData = await prisma.statusData.create({
       data: {
         content: contentData,
         type,
-        backgroundColor,
+        backgroundColor: backgroundColor || null,
         userId: userId,
       },
     });
@@ -52,8 +58,21 @@ export const createStatus = async (req, res) => {
       );
       idsToFind.push(...otherParticipants); // Add other participant IDs to idsToFind
     });
+    // Notify all other participants
     idsToFind.forEach((id) => {
-      io.to(getUserSocket(id)).emit("newStatus", { mine: false, status });
+      const userSocket = getUserSocket(id); // Fetch the socket for this user
+      console.log(userSocket);
+      if (userSocket) {
+        io.to(userSocket).emit("newStatus", {
+          mine: false,
+          userId: status.userId, // ID of the user who posted the status
+          poster: status.poster,
+          profilePicture: status.profilePicture,
+          status: {
+            ...newStatusData,
+          },
+        });
+      }
     });
     //To do socket event here
     res.status(201).json({
@@ -153,7 +172,6 @@ export const fetchStatuses = async (req, res) => {
       );
       otherParticipants.forEach((id) => idsToFind.add(id)); // Adds IDs to the Set
     });
-
 
     // Use Promise.all to handle the async operations correctly
     const statusesPromises = [...idsToFind].map(async (id) => {

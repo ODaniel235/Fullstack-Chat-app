@@ -8,14 +8,39 @@ const useStatusStore = create<any>((set, get) => ({
   setMyStatus: (data) => {
     set({ myStatuses: data });
   },
-  setOther: (data) => {
+  setOtherStatuses: (data) => {
     set((state) => {
-      const updatedStatuses = state.otherStatuses.map((status) =>
-        status.userId === data.userId ? { ...status, ...data } : status
+      console.log("New status=====>", data);
+      const otherStatuses = state.otherStatuses.map((status) =>
+        status.userId === data.userId
+          ? { ...status, statuses: [...status.statuses, ...data.statuses] }
+          : status
       );
+
+      // If the userId does not exist, add it to the list
+      const userExists = state.otherStatuses.some(
+        (status) => status.userId === data.userId
+      );
+      if (!userExists) {
+        otherStatuses.push({
+          userId: data.userId,
+          poster: data.poster || "Unknown", // Default to 'Unknown' if poster isn't provided
+          profilePicture: data.profilePicture || "",
+          statuses: data.statuses,
+        });
+      }
+
+      return { otherStatuses };
     });
   },
-
+  editStatus: (data) => {
+    set((state) => {
+      const userStatus = state.otherStatuses.map((status) => {
+        return status.userId == data.userId ? { ...status, ...data } : status;
+      });
+      return { otherStatuses: userStatus };
+    });
+  },
   fetchStatus: async (toast: Function) => {
     try {
       const response = await axiosInstance.get("/status/");
@@ -53,7 +78,7 @@ const useStatusStore = create<any>((set, get) => ({
       const response = await axiosInstance.post("/status/new", {
         type,
         content,
-        backgroundColor,
+        backgroundColor: backgroundColor,
       });
       console.log(response);
       if (response.status == 201) {

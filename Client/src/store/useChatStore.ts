@@ -44,20 +44,6 @@ const useChatStore = create<any>((set, get) => ({
   setChats: (data) => {
     set({ chats: data });
   },
-  editUser: (data) => {
-    set((state) => {
-      const updatedChats = state.chats.map((chat) => {
-        const updatedParticipants = chat.participants.map((p) =>
-          p.id === useAuthStore.getState().userData.id ? { ...p, ...data } : p
-        );
-        return { ...chat, participants: updatedParticipants };
-      });
-
-      return {
-        chats: updatedChats,
-      };
-    });
-  },
 
   fetchConversation: async (toast: Function) => {
     try {
@@ -163,6 +149,36 @@ const useChatStore = create<any>((set, get) => ({
       }
     }
   },
+  editUser: (data) => {
+    console.log("User data====>", data);
+    set((state) => {
+      const updatedChats = state.chats.map((chat) => {
+        const userExists = chat.participants.some(
+          (participant) => participant.id === data.id
+        );
+
+        if (userExists) {
+          // If the user exists, update their data (merge the user data with existing participants)
+          return {
+            ...chat,
+            participants: chat.participants.map((participant) =>
+              participant.id === data.id
+                ? { ...participant, ...data } // Merge the new user data with the existing participant
+                : participant
+            ),
+          };
+        }
+        console.log(chat);
+        // If the user doesn't exist, return the chat unchanged
+        return chat;
+      });
+
+      return {
+        chats: updatedChats, // Update the state with the new chats array
+      };
+    });
+  },
+
   fetchUser: async (
     group: boolean,
     onClose: Function,

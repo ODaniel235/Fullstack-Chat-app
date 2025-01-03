@@ -45,11 +45,12 @@ export const Status: React.FC = () => {
             "Previous status in current group:",
             currentGroup.statuses[currentStatusIndex - 1]
           );
+          
         } else if (groupIndex > 0) {
           // Move to the last status of the previous group
           const previousGroup = otherStatuses[groupIndex - 1];
           const lastStatusInPreviousGroup =
-            previousGroup.statuses[previousGroup.data.length - 1];
+            previousGroup.statuses[previousGroup.statuses.length - 1];
           setSelectedStatus(lastStatusInPreviousGroup);
           console.log(
             "Last status in previous group:",
@@ -72,7 +73,6 @@ export const Status: React.FC = () => {
       const nextStatus =
         myStatuses.statuses.findIndex((s) => s.id == selectedStatus?.id) + 1;
       setSelectedStatus(myStatuses.statuses[nextStatus]);
-
     } else {
       // Handling "sampleStatuses"
       const statusIndex = otherStatuses.findIndex((s) =>
@@ -113,6 +113,7 @@ export const Status: React.FC = () => {
             } else {
               // Next group is empty (unlikely but handled)
               console.log("Next group is empty.");
+
               onClose();
             }
           } else {
@@ -122,6 +123,7 @@ export const Status: React.FC = () => {
           }
         }
       } else {
+        console.log("Status not found");
         onClose(); // Status not found in sampleStatuses
       }
     }
