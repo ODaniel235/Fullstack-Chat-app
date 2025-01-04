@@ -42,13 +42,12 @@ io.on("connection", (socket) => {
         where: { id: data.id },
         select: { lastMessage: true },
       });
-
       if (!conversation || !conversation.lastMessage) {
         console.error("No conversation or lastMessage found for id:", data.id);
         return;
       }
-      const updateMessage = await prisma.message.update({
-        where: { id: conversation.lastMessage.id },
+      await prisma.message.updateMany({
+        where: { conversationId: data.id },
         data: {
           isRead: true,
         },

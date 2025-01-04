@@ -14,6 +14,7 @@ export const ChatWindow: React.FC = () => {
   const { toast } = useToast();
   const { setCall, inCall } = useCallStore();
   const { currentUser } = useStore();
+
   const { selectedChat, isMessageLoading, messages, fetchMessages } =
     useChatStore();
   const { userData, socket } = useAuthStore();
@@ -25,6 +26,7 @@ export const ChatWindow: React.FC = () => {
   const participantData =
     selectedChat?.participants?.filter((p) => p.id !== userData.id)[0] ||
     selectedChat;
+  console.log("Data===>", participantData, messages);
   useEffect(() => {
     if (!participantData) {
       navigate("/chats");
@@ -36,11 +38,12 @@ export const ChatWindow: React.FC = () => {
     });
   }, [participantData]);
   useEffect(() => {
+    if (userData.id !== selectedChat.lastMessage.id) return;
     socket.emit("markMessageAsRead", {
       id: selectedChat.id,
       userId: userData.id,
     });
-  }, []);
+  }, [selectedChat, messages]);
   console.log(participantData);
   const startCall = (type: string) => {
     if (type == "video") {

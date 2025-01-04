@@ -47,36 +47,36 @@ export const sendMessage = async (req, res) => {
       },
     });
     console.log("Created message", newMessage);
-    if (newMessage) {
-      conversation = await prisma.conversation.update({
-        where: {
-          id: conversation.id,
-        },
-        data: {
-          messages: {
-            connect: {
-              id: newMessage.id,
-            },
+    conversation = await prisma.conversation.update({
+      where: {
+        id: conversation.id,
+      },
+      data: {
+        messages: {
+          connect: {
+            id: newMessage.id,
           },
+        },
 
-          lastMessage: {
-            type: newMessage.type,
-            content: newMessage.content,
-            senderId: newMessage.senderId,
-            status: newMessage.status,
-            isRead: newMessage.isRead,
-            timeStamp: newMessage.timestamp,
+        lastMessage: {
+          type: newMessage.type,
+          content: newMessage.content,
+          senderId: newMessage.senderId,
+          status: newMessage.status,
+          isRead: newMessage.isRead,
+          timeStamp: newMessage.timestamp,
+        },
+      },
+      include: {
+        messages: {
+          orderBy: {
+            createdAt: "asc",
           },
         },
-        include: {
-          messages: {
-            orderBy: {
-              createdAt: "asc",
-            },
-          },
-        },
-      });
-    }
+        participants: true,
+      },
+    });
+
     const allConvos = await prisma.conversation.findMany({
       where: {
         participantIds: {

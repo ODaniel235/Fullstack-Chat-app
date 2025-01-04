@@ -18,6 +18,7 @@ export const ChatList: React.FC = () => {
   const { fetchConversation, handleChatClick } = useChatStore();
   const { userData } = useAuthStore();
   const [showJoinModal, setShowJoinModal] = useState<boolean>(false);
+  console.log("Chats===>", chats);
   useEffect(() => {
     const fetchConvo = async () => {
       await fetchConversation(toast);
@@ -81,7 +82,7 @@ export const ChatList: React.FC = () => {
                   whileHover={{ scale: 1.01 }}
                 >
                   <div className="flex items-center space-x-3">
-                    {otherParticipant.avatar ? (
+                    {otherParticipant?.avatar ? (
                       <img
                         src={otherParticipant.avatar}
                         alt={otherParticipant.name || "User Avatar"}
@@ -89,7 +90,7 @@ export const ChatList: React.FC = () => {
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl bg-blue-600">
-                        {otherParticipant.name?.substring(0, 1)?.toUpperCase()}
+                        {otherParticipant?.name?.substring(0, 1)?.toUpperCase()}
                       </div>
                     )}
                     <div className="flex-1">
@@ -103,7 +104,8 @@ export const ChatList: React.FC = () => {
                       </div>
                       <p
                         className={`text-sm  truncate ${
-                          !chat.lastMessage.isRead
+                          !chat.lastMessage.isRead &&
+                          chat.lastMessage.senderId !== userData.id
                             ? "font-bold text-white"
                             : "text-gray-500"
                         }`}

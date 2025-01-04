@@ -99,7 +99,8 @@ const useChatStore = create<any>((set, get) => ({
     participantId: string,
     content: string,
     toast: Function,
-    wipeMessage: Function
+    wipeMessage: Function,
+    location: string
   ) => {
     try {
       const response = await axiosInstance.post("/message/send", {
@@ -107,13 +108,19 @@ const useChatStore = create<any>((set, get) => ({
         type: type,
         content: content,
       });
-
       if (response.status == 201) {
         console.log("Message sent:", response.data.data.newMessage);
         wipeMessage();
+        if (location === "/chat/new") {
+          set({ selectedChat: response.data.data.conversation });
+          set({ setActiveChat: response.data.data.conversation.id });
+          get().handleChatClick(
+            response.data.data.conversation.id,
+            response.data.data.conversation
+          );
+        }
       }
     } catch (error) {
-      console.log(error);
       if (error instanceof AxiosError) {
         const err =
           error?.response?.data?.error || "An error occoured, please try again";
@@ -129,6 +136,7 @@ const useChatStore = create<any>((set, get) => ({
           title: "Error",
           description: "An error occoured",
         });
+        console.log("Error here", error);
       }
     }
   },

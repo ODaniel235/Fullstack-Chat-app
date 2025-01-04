@@ -4,7 +4,7 @@ import analyzeText from "@/utils/chatModeration";
 import { useToast } from "@/hooks/use-toast";
 import useChatStore from "@/store/useChatStore";
 import useAuthStore from "@/store/useAuthStore";
-import axiosInstance from "@/utils/axios";
+import { useLocation, useNavigate } from "react-router-dom";
 interface MessageInputProp {
   participantId: any;
 }
@@ -13,7 +13,9 @@ export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState<boolean>(false);
   const { selectedChat, handleMessage } = useChatStore();
+  const location = useLocation();
   const { userData } = useAuthStore();
+  const navigate = useNavigate();
   // TODO: Implement message sending functionality
   const wipeMessage = () => {
     setMessage("");
@@ -34,8 +36,15 @@ export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
       return;
     }
 
-    await handleMessage("text", participantId, message, toast, wipeMessage);
-    setIsSending(false);
+    await handleMessage(
+      "text",
+      participantId,
+      message,
+      toast,
+      wipeMessage,
+      location.pathname,
+    
+    );
   };
 
   return (

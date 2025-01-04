@@ -13,7 +13,6 @@ const useSocketStore = create<any>((set, get) => ({
       }); */
       socket.on("newMessage", (newMessage: any) => {
         const selectedChat = useChatStore.getState().selectedChat;
-        console.log("Message===>", newMessage);
         if (selectedChat?.id == newMessage.conversation.id) {
           useChatStore.getState().setMessages(newMessage.conversation.messages);
         }

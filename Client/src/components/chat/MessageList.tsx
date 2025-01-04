@@ -79,7 +79,7 @@ export const MessageList: React.FC = () => {
                   </div>
                   {/* Show "seen" for the last message if it's read */}
                   {isLastMessage &&
-                    selectedChat.lastMessage.isRead &&
+                    message.isRead &&
                     message.senderId == userData.id && (
                       <div className="text-right text-xs text-white mt-1">
                         Seen
