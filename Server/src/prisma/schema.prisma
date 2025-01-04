@@ -54,12 +54,6 @@ enum MessageType{
   audio   @map("audio")
   video   @map("video")
 }
-enum MessageStatus{
-  sent    @map("sent")
-  delivered @map("delivered")
-  read    @map("read")
-
-}
 model Message{
   id         String        @id     @default(cuid())
   senderId          String
@@ -68,7 +62,6 @@ model Message{
   sender            User            @relation(fields:[senderId], references:[id])
   type              MessageType
   content           String
-  status            MessageStatus   @default(sent)
   isRead            Boolean         @default(false)
   createdAt         DateTime        @default(now())
 }

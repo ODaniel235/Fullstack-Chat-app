@@ -33,9 +33,90 @@ io.on("connection", (socket) => {
       },
     });
   });
-  socket.on("markMessageAsRead", (data) => {
-    console.log(data);
+  socket.on("markMessageAsRead", async (data) => {
+    try {
+      console.log("Id ===>", data);
+
+      // Fetch the conversation to get the current `lastMessage`
+      const conversation = await prisma.conversation.findUnique({
+        where: { id: data.id },
+        select: { lastMessage: true },
+      });
+
+      if (!conversation || !conversation.lastMessage) {
+        console.error("No conversation or lastMessage found for id:", data.id);
+        return;
+      }
+      const updateMessage = await prisma.message.update({
+        where: { id: conversation.lastMessage.id },
+        data: {
+          isRead: true,
+        },
+      });
+      // Update the `lastMessage` to mark it as read
+      const updatedConversation = await prisma.conversation.update({
+        where: { id: data.id },
+        data: {
+          lastMessage: {
+            ...conversation.lastMessage, // Spread the existing lastMessage fields
+            isRead: true, // Mark it as read
+          },
+        },
+        select: {
+          lastMessage: true,
+          createdAt: true,
+          id: true,
+          messages: true,
+          participantIds: true,
+          participants: true,
+          updatedAt: true,
+        },
+      });
+      const allConvos = await prisma.conversation.findMany({
+        where: { id: data.userId },
+        select: {
+          lastMessage: true,
+          createdAt: true,
+          id: true,
+          messages: true,
+          participantIds: true,
+          participants: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+      });
+      io.emit("newMessage", { allConvos });
+      const userToNotify = updatedConversation.participantIds.filter(
+        (id) => id !== data.userId
+      )[0];
+      console.log("User to notify====>", userToNotify);
+      const markAsSeen = await prisma.conversation.findMany({
+        where: { participantIds: { hasSome: [userToNotify] } },
+        select: {
+          createdAt: true,
+          id: true,
+          lastMessage: true,
+          messages: true,
+          participantIds: true,
+          participants: true,
+          updatedAt: true,
+        },
+      });
+      io.to(getUserSocket(userToNotify)).emit("newMessage", {
+        allConvos: markAsSeen,
+        conversation: updatedConversation,
+      });
+      console.log(
+        "Updated lastMessage as read:",
+        updatedConversation.lastMessage
+      );
+    } catch (err) {
+      console.error("Error in markMessageAsRead:", err.message);
+    }
   });
+
   socket.on("disconnect", () => {
     console.log("User disconnected", userId);
     delete activeSocketMap[userId];

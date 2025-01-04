@@ -36,7 +36,10 @@ export const ChatWindow: React.FC = () => {
     });
   }, [participantData]);
   useEffect(() => {
-    socket.emit("markMessageAsRead", { id: selectedChat });
+    socket.emit("markMessageAsRead", {
+      id: selectedChat.id,
+      userId: userData.id,
+    });
   }, []);
   console.log(participantData);
   const startCall = (type: string) => {

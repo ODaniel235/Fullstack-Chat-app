@@ -22,6 +22,7 @@ const useChatStore = create<any>((set, get) => ({
   },
 
   setChats: (data) => {
+    console.log(data);
     set({
       chats: data,
     });
