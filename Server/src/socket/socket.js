@@ -33,6 +33,9 @@ io.on("connection", (socket) => {
       },
     });
   });
+  socket.on("markMessageAsRead", (data) => {
+    console.log(data);
+  });
   socket.on("disconnect", () => {
     console.log("User disconnected", userId);
     delete activeSocketMap[userId];

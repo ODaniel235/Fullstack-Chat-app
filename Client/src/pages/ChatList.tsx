@@ -101,7 +101,13 @@ export const ChatList: React.FC = () => {
                           {formatDistanceToNow(chat?.updatedAt)}
                         </span>
                       </div>
-                      <p className={`text-sm text-gray-500 truncate ${chat.lastMessage.isRead}`}>
+                      <p
+                        className={`text-sm  truncate ${
+                          !chat.lastMessage.isRead
+                            ? "font-bold text-white"
+                            : "text-gray-500"
+                        }`}
+                      >
                         {lastMessage
                           ? lastMessage.type === "text"
                             ? lastMessage.content

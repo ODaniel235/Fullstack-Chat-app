@@ -16,7 +16,7 @@ export const ChatWindow: React.FC = () => {
   const { currentUser } = useStore();
   const { selectedChat, isMessageLoading, messages, fetchMessages } =
     useChatStore();
-  const { userData } = useAuthStore();
+  const { userData, socket } = useAuthStore();
   const [isRecording, setIsRecording] = useState({
     type: "null",
     value: true,
@@ -35,7 +35,9 @@ export const ChatWindow: React.FC = () => {
       navigate("/chats");
     });
   }, [participantData]);
-
+  useEffect(() => {
+    socket.emit("markMessageAsRead", { id: selectedChat });
+  }, []);
   console.log(participantData);
   const startCall = (type: string) => {
     if (type == "video") {
