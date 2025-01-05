@@ -38,11 +38,15 @@ export const ChatWindow: React.FC = () => {
     });
   }, [participantData]);
   useEffect(() => {
-    if (userData.id !== selectedChat.lastMessage.id) return;
-    socket.emit("markMessageAsRead", {
-      id: selectedChat.id,
-      userId: userData.id,
-    });
+    if (!userData || !selectedChat) {
+      navigate("/");
+    } else {
+      if (userData.id !== selectedChat.lastMessage.id) return;
+      socket.emit("markMessageAsRead", {
+        id: selectedChat.id,
+        userId: userData.id,
+      });
+    }
   }, [selectedChat, messages]);
   console.log(participantData);
   const startCall = (type: string) => {

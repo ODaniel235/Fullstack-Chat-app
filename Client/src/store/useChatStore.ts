@@ -63,7 +63,10 @@ const useChatStore = create<any>((set, get) => ({
   ) => {
     try {
       set({ isMessagesLoading: true });
-      if (!recipientId) navigate("/chats");
+      if (!recipientId) {
+        navigate("/chats");
+        return;
+      }
       const response = await axiosInstance.get(`/message/${recipientId}`);
       if (response.status == 200) {
         console.log("Messages====>", response);

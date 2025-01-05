@@ -25,6 +25,7 @@ import useStatusStore from "./store/useStatusStore";
 import { useToast } from "./hooks/use-toast";
 import useThemeStore from "./store/useThemeStore";
 import useSocketStore from "./store/useSocketStore";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 function App() {
   const { toast } = useToast();
   const { userData, checkAuth, isCheckingAuth, socket } = useAuthStore();
@@ -56,62 +57,64 @@ function App() {
       </div>
     );
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENTID}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/" element={<MainLayout />}>
-            <Route
-              index
-              element={
-                userData ? (
-                  <Navigate to="/chats" replace />
-                ) : (
-                  <Navigate to="/signin" />
-                )
-              }
-            />
-            <Route
-              path="chats"
-              element={userData ? <ChatList /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="chat/:chatId"
-              element={userData ? <ChatWindow /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="status"
-              element={userData ? <Status /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="groups"
-              element={userData ? <GroupList /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="groups/:groupId"
-              element={userData ? <GroupChat /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="groups/:groupId/info"
-              element={userData ? <GroupInfo /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="settings"
-              element={userData ? <Settings /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="user/:userId"
-              element={userData ? <UserProfile /> : <Navigate to="/signin" />}
-            />
-            <Route
-              path="search"
-              element={userData ? <UserSearch /> : <Navigate to="/signin" />}
-            />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </GoogleOAuthProvider>
+    <ErrorBoundary>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENTID}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/" element={<MainLayout />}>
+              <Route
+                index
+                element={
+                  userData ? (
+                    <Navigate to="/chats" replace />
+                  ) : (
+                    <Navigate to="/signin" />
+                  )
+                }
+              />
+              <Route
+                path="chats"
+                element={userData ? <ChatList /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="chat/:chatId"
+                element={userData ? <ChatWindow /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="status"
+                element={userData ? <Status /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="groups"
+                element={userData ? <GroupList /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="groups/:groupId"
+                element={userData ? <GroupChat /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="groups/:groupId/info"
+                element={userData ? <GroupInfo /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="settings"
+                element={userData ? <Settings /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="user/:userId"
+                element={userData ? <UserProfile /> : <Navigate to="/signin" />}
+              />
+              <Route
+                path="search"
+                element={userData ? <UserSearch /> : <Navigate to="/signin" />}
+              />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </ErrorBoundary>
   );
 }
 
