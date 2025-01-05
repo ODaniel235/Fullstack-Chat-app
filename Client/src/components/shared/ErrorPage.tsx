@@ -13,7 +13,7 @@ const ErrorPage: React.FC = () => {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center"
+        className="text-center overflow-y-hidden"
       >
         <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse overflow-y-hidden" />
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
@@ -26,7 +26,7 @@ const ErrorPage: React.FC = () => {
           onClick={handleRetry}
           className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium mx-auto"
         >
-          <RefreshCcw className="w-5 h-5 mr-2" />
+          <RefreshCcw className="w-5 h-5 mr-2 animate-pulse" />
           Retry
         </button>
       </motion.div>

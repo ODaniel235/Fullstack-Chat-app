@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
   {
     /* Disconnect Function */
   }
-  socket.on("likedStatus", async (data) => {
+/*   socket.on("likedStatus", async (data) => {
     console.log(data);
     const statusToLike = await prisma.statusData.update({
       where: { id: data.id },
@@ -32,9 +32,9 @@ io.on("connection", (socket) => {
         likes: likes + 1,
       },
     });
-  });
+  }); */
   socket.on("markMessageAsRead", async (data) => {
-    console.log(data);
+    console.log("Socket data===>", data);
   });
 
   socket.on("disconnect", () => {
