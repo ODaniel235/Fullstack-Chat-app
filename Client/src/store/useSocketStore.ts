@@ -12,6 +12,7 @@ const useSocketStore = create<any>((set, get) => ({
         useAuthStore.getState().setUser(newProfile);
       }); */
       socket.on("newMessage", (newMessage: any) => {
+        console.log(newMessage);
         const selectedChat = useChatStore.getState().selectedChat;
         if (selectedChat?.id == newMessage.conversation.id) {
           useChatStore.getState().setMessages(newMessage.conversation.messages);

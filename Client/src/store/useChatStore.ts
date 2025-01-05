@@ -30,6 +30,8 @@ const useChatStore = create<any>((set, get) => ({
 
   fetchConversation: async (toast: Function) => {
     try {
+      useAuthStore.getState().setIsCheckingAuth(true);
+
       const response = await axiosInstance.get("/message", {
         withCredentials: true,
       });
@@ -54,6 +56,8 @@ const useChatStore = create<any>((set, get) => ({
           description: "An error occoured",
         });
       }
+    } finally {
+      useAuthStore.getState().setIsCheckingAuth(false);
     }
   },
   fetchMessages: async (
@@ -69,7 +73,6 @@ const useChatStore = create<any>((set, get) => ({
       }
       const response = await axiosInstance.get(`/message/${recipientId}`);
       if (response.status == 200) {
-        console.log("Messages====>", response);
         set({ messages: response.data });
       }
     } catch (error) {

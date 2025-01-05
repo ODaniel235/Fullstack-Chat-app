@@ -18,7 +18,6 @@ export const ChatList: React.FC = () => {
   const { fetchConversation, handleChatClick } = useChatStore();
   const { userData } = useAuthStore();
   const [showJoinModal, setShowJoinModal] = useState<boolean>(false);
-  console.log("Chats===>", chats);
   useEffect(() => {
     const fetchConvo = async () => {
       await fetchConversation(toast);

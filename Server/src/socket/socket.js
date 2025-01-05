@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
   {
     /* Disconnect Function */
   }
-/*   socket.on("likedStatus", async (data) => {
+  /*   socket.on("likedStatus", async (data) => {
     console.log(data);
     const statusToLike = await prisma.statusData.update({
       where: { id: data.id },
@@ -35,6 +35,48 @@ io.on("connection", (socket) => {
   }); */
   socket.on("markMessageAsRead", async (data) => {
     console.log("Socket data===>", data);
+    const userToUpdate = await prisma.conversation.findFirst({
+      where: { id: data.id },
+    });
+    if (!userToUpdate) return;
+
+    const updatedConvo = await prisma.conversation.update({
+      where: { id: data.id },
+      data: {
+        lastMessage: {
+          ...userToUpdate.lastMessage,
+          isRead: true,
+        },
+        messages: {
+          updateMany: {
+            where: {
+              isRead: false,
+            },
+            data: {
+              isRead: true,
+            },
+          },
+        },
+      },
+      include: {
+        messages: true,
+        participants: true,
+      },
+    });
+    const otherUser = updatedConvo.participantIds.filter(
+      (id) => id !== data.userId
+    )[0];
+    const otherUserConvos = await prisma.conversation.findMany({
+      where: { participantIds: { hasSome: [otherUser] } },
+      include: {
+        messages: true,
+        participants: true,
+      },
+    });
+    io.to(getUserSocket(otherUser)).emit("newMessage", {
+      conversation: updatedConvo,
+      allConvos: otherUserConvos,
+    });
   });
 
   socket.on("disconnect", () => {

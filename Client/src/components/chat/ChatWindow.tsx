@@ -15,8 +15,7 @@ export const ChatWindow: React.FC = () => {
   const { setCall, inCall } = useCallStore();
   const { currentUser } = useStore();
 
-  const { selectedChat, isMessageLoading, messages, fetchMessages } =
-    useChatStore();
+  const { selectedChat, messages, fetchMessages } = useChatStore();
   const { userData, socket } = useAuthStore();
   const [isRecording, setIsRecording] = useState({
     type: "null",
@@ -26,7 +25,6 @@ export const ChatWindow: React.FC = () => {
   const participantData =
     selectedChat?.participants?.filter((p) => p.id !== userData.id)[0] ||
     selectedChat;
-  console.log("Data===>", participantData, messages);
   useEffect(() => {
     if (!participantData) {
       navigate("/chats");
@@ -42,15 +40,20 @@ export const ChatWindow: React.FC = () => {
       navigate("/");
       return;
     }
-
-    if (userData.id !== selectedChat?.lastMessage?.senderId) return;
-    console.log("Data====>", userData, selectedChat);
+    console.log(selectedChat);
+    if (!selectedChat.id || !userData.id) return;
+    console.log("Selected====>", selectedChat);
+    if (
+      !selectedChat.lastMessage ||
+      selectedChat?.lastMessage.senderId == userData.id
+    )
+      return;
     socket.emit("markMessageAsRead", {
       id: selectedChat.id,
       userId: userData.id,
     });
+    console.log("Emmitted event");
   }, [selectedChat, messages]);
-  console.log(participantData);
   const startCall = (type: string) => {
     if (type == "video") {
       setCall(

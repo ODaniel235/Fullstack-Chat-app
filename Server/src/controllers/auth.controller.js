@@ -252,7 +252,7 @@ export const updateUser = async (req, res) => {
         },
       }),
     };
-    console.log(updateData);
+
     // Update user in the database
     const updatedData = await prisma.user.update({
       where: { id: user.id },
@@ -307,7 +307,6 @@ export const updateUser = async (req, res) => {
 export const getUser = async (req, res) => {
   const { email } = req.query;
   try {
-    console.log(req.query);
     if (!email)
       return res.status(400).json({ error: "Email is a required field" });
     const user = await prisma.user.findUnique({
@@ -325,6 +324,10 @@ export const getUser = async (req, res) => {
         privacySettings: true,
       },
     });
+    if (!user)
+      return res
+        .status(404)
+        .json({ error: "User with this credential does not exist" });
     let processedUser = {
       ...user,
       ...(user.privacySettings.profileVisibility == "everyone"

@@ -9,7 +9,6 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({
         error: "receiverId, type and message content are required fields",
       });
-    console.log(senderId, receiverId);
     let conversation = await prisma.conversation.findFirst({
       where: {
         participantIds: {
@@ -17,7 +16,6 @@ export const sendMessage = async (req, res) => {
         },
       },
     });
-    console.log("Initial Convo", conversation);
     if (!conversation) {
       conversation = await prisma.conversation.create({
         data: {
@@ -29,7 +27,6 @@ export const sendMessage = async (req, res) => {
           },
         },
       });
-      console.log("Created Convo", conversation);
     }
     let contentLink = content;
     if (type !== "text") {
@@ -134,8 +131,6 @@ export const fetchMessages = async (req, res) => {
   const { recipientId } = await req.params;
 
   try {
-    console.log(req.params);
-    console.log(recipientId);
     if (!recipientId)
       return res
         .status(400)

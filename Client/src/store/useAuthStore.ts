@@ -10,6 +10,8 @@ const BASE_URL =
 const useAuthStore = create<any>((set, get) => ({
   isLoading: false,
   isCheckingAuth: true,
+
+  setIsCheckingAuth: (value: boolean) => set({ isCheckingAuth: value }),
   socket: null,
   userData: null,
   setUser: (data) => {
@@ -18,7 +20,6 @@ const useAuthStore = create<any>((set, get) => ({
 
   signup: async (data: any, navigate: Function, toast: Function) => {
     try {
-      set({ isCheckingAuth: true });
       set({ isLoading: true });
       const response = await axiosInstance.post("/auth/signup", data);
       console.log(response);
@@ -26,6 +27,7 @@ const useAuthStore = create<any>((set, get) => ({
       if (response.status == 201) {
         set({ userData: response.data.data });
         get().connectSocket();
+        set({ isCheckingAuth: true });
         navigate("/chats");
       }
     } catch (error) {
@@ -46,21 +48,21 @@ const useAuthStore = create<any>((set, get) => ({
         });
       }
     } finally {
-      set({ isCheckingAuth: false });
       set({ isLoading: false });
     }
   },
   login: async (data: any, navigate: Function, toast: Function) => {
     console.log(navigate, typeof navigate);
     try {
-      set({ isCheckingAuth: true });
       set({ isLoading: true });
       const response = await axiosInstance.post("/auth/login", data);
       console.log(response);
 
-      if (response.status == 200 || response.data == 201) {
+      if (response.status == 200 || response.status == 201) {
         set({ userData: response.data.data });
         get().connectSocket();
+        set({ isCheckingAuth: true });
+
         navigate("/chats");
       }
     } catch (error) {
@@ -81,7 +83,6 @@ const useAuthStore = create<any>((set, get) => ({
         });
       }
     } finally {
-      set({ isCheckingAuth: false });
       set({ isLoading: false });
     }
   },

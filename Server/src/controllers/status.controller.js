@@ -201,8 +201,9 @@ export const fetchStatuses = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+}; /* 
 //Scheduling cron to auto delete statuses
 cron.schedule("* * * * * ", () => {
   console.log("Running task every minute");
 });
+ */
