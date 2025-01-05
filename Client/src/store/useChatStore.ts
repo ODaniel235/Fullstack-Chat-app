@@ -127,6 +127,7 @@ const useChatStore = create<any>((set, get) => ({
         }
       }
     } catch (error) {
+      console.log(error);
       if (error instanceof AxiosError) {
         const err =
           error?.response?.data?.error || "An error occoured, please try again";

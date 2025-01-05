@@ -7,13 +7,15 @@ const useSocketStore = create<any>((set, get) => ({
   listenToSocket: () => {
     const socket = useAuthStore.getState().socket;
     if (socket) {
-      /*       socket.on("updatedProfile", (newProfile: any) => {
+      socket.on("updatedProfile", (newProfile: any) => {
         // Handle the incoming data here
-        useAuthStore.getState().setUser(newProfile);
-      }); */
+        useAuthStore.getState().setUser(newProfile.newProfile);
+        useStatusStore.getState().setMyStatus(newProfile.statusData);
+      });
       socket.on("newMessage", (newMessage: any) => {
-        console.log(newMessage);
+        console.log("New Message Socket ====>", newMessage);
         const selectedChat = useChatStore.getState().selectedChat;
+        console.log(newMessage);
         if (selectedChat?.id == newMessage.conversation.id) {
           useChatStore.getState().setMessages(newMessage.conversation.messages);
         }

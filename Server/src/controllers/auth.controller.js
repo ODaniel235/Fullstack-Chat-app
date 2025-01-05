@@ -277,7 +277,10 @@ export const updateUser = async (req, res) => {
         : { avatar: null }),
     };
 
-    io.to(getUserSocket(user.id)).emit("updatedProfile", updatedData);
+    io.to(getUserSocket(user.id)).emit("updatedProfile", {
+      newProfile: updatedData,
+      newStatusData,
+    });
     io.to(getUserSocket(user.id)).emit("updatedStatus", newStatusData);
     const conversationsToFind = await prisma.conversation.findMany({
       where: { participantIds: { hasSome: [user.id] } },

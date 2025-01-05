@@ -15,7 +15,8 @@ export const ChatWindow: React.FC = () => {
   const { setCall, inCall } = useCallStore();
   const { currentUser } = useStore();
 
-  const { selectedChat, messages, fetchMessages } = useChatStore();
+  const { selectedChat, messages, handleMessage, fetchMessages } =
+    useChatStore();
   const { userData, socket } = useAuthStore();
   const [isRecording, setIsRecording] = useState({
     type: "null",
@@ -54,6 +55,7 @@ export const ChatWindow: React.FC = () => {
     });
     console.log("Emmitted event");
   }, [selectedChat, messages]);
+  console.log(participantData);
   const startCall = (type: string) => {
     if (type == "video") {
       setCall(
@@ -77,6 +79,16 @@ export const ChatWindow: React.FC = () => {
   };
   const record = (type: string) => {
     setIsRecording({ value: true, type: type });
+  };
+  const handleAudioSend = async (audioBlob: any, wipeBlob: any) => {
+    const reader = new FileReader();
+    //Will be pushing to cloudinary from here to reduce payload to backend
+    reader.onloadend = () => {
+      const base64String = reader.result.split(",")[1]; // Get base64 string from data URL
+      console.log(base64String);
+      handleMessage("audio", participantData.id, base64String, toast, wipeBlob);
+    };
+    reader.readAsDataURL(audioBlob); // Read the Blob as a Data URL
   };
   return (
     <div className="h-full flex flex-col">
@@ -124,7 +136,7 @@ export const ChatWindow: React.FC = () => {
       <AudioRecordingModal
         isOpen={isRecording.value && isRecording.type == "audio"}
         onClose={() => setIsRecording({ type: "null", value: false })}
-        onSend={() => console.log("Sent")}
+        onSend={(audioBlob, wipeBlob) => handleAudioSend(audioBlob, wipeBlob)}
       />
       <VideoRecordingModal
         isOpen={isRecording.value && isRecording.type == "video"}

@@ -5,7 +5,7 @@ import { Mic, Send, Pause, MicOff, X, Play } from "lucide-react";
 interface AudioRecordingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (audioBlob: Blob) => void;
+  onSend: (audioBlob: Blob, wipeBlob: any) => void;
 }
 
 export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
@@ -65,10 +65,11 @@ export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
     cleanup();
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (audioBlob) {
-      onSend(audioBlob);
+      onSend(audioBlob, cleanup);
       cleanup();
+      onClose();
     }
   };
 
@@ -78,7 +79,6 @@ export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
     setIsRecording(false);
     setAudioBlob(null);
     setAudioUrl(null);
-    onClose();
   };
 
   return (
