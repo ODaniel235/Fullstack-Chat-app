@@ -73,7 +73,7 @@ export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
   const handleSend = async () => {
     if (audioBlob) {
       console.log(audioBlob);
-      onSend("Blob===>", audioBlob, cleanup);
+      onSend(audioBlob, cleanup);
       cleanup();
 
       onClose();

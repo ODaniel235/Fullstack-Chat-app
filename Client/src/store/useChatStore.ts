@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 import { create } from "zustand";
 import useAuthStore from "./useAuthStore";
 import React from "react";
+import getBase64Size from "@/utils/sizeInBase";
 interface useChatsStore {
   chats: Chat[];
 }
@@ -231,6 +232,31 @@ const useChatStore = create<any>((set, get) => ({
         });
       }
     }
+  },
+  blobToBase64: (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob); // Read the Blob as Base64
+    }),
+  handleSpecialChatSend: async (
+    audioBlob: Blob,
+    wipeBlob: Function,
+    toast: Function,
+    participantId: string,
+    folder: string
+  ) => {
+    const data = await get().blobToBase64(audioBlob);
+    const size = await getBase64Size(data);
+    if (parseFloat(size.sizeInMB) > 50) {
+      toast({
+        variant: "destructive",
+        description: `File exceeds 50mb file limit as it is ${size}MB large`,
+      });
+      return;
+    }
+    await get().handleMessage(folder, participantId, data, toast, wipeBlob);
   },
 }));
 export default useChatStore;

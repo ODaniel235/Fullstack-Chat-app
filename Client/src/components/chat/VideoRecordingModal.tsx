@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Video, Send, Pause, Play, X } from "lucide-react";
+import { Send, Pause, Play, X } from "lucide-react";
 
 interface VideoRecordingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (videoBlob: Blob) => void;
+  onSend: (videoBlob: Blob, cleanUp: Function) => void;
 }
 
 export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
@@ -14,6 +14,8 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
   onSend,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const videoChunksRef = useRef<BlobPart[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
 
@@ -23,33 +25,88 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
       interval = setInterval(() => {
         setDuration((prev) => prev + 1);
       }, 1000);
+    } else {
+      setDuration(0);
     }
     return () => clearInterval(interval);
   }, [isRecording]);
 
   useEffect(() => {
+    let stream: MediaStream | null = null;
+
     if (isOpen) {
-      // TODO: Implement actual video recording
       navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
+        .getUserMedia({ video: true, audio: true })
+        .then((mediaStream) => {
+          stream = mediaStream;
           if (videoRef.current) {
-            videoRef.current.srcObject = stream;
+            videoRef.current.srcObject = mediaStream;
+            videoRef.current.play();
           }
+
+          const mediaRecorder = new MediaRecorder(mediaStream);
+          mediaRecorderRef.current = mediaRecorder;
+          videoChunksRef.current = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              videoChunksRef.current.push(event.data);
+            }
+          };
         })
-        .catch(console.error);
+        .catch((error) => console.error("Error accessing camera:", error));
     }
-    if (!isOpen) {
-      setDuration(0);
-      setIsRecording(false);
-    }
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
   }, [isOpen]);
 
+  const handleRecordToggle = () => {
+    if (!isRecording) {
+      mediaRecorderRef.current?.start();
+      setIsRecording(true);
+    } else {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+    }
+  };
+
   const handleSend = () => {
-    // TODO: Implement actual video recording
-    const dummyBlob = new Blob([], { type: "video/webm" });
-    onSend(dummyBlob);
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+
+      mediaRecorderRef.current.onstop = () => {
+        const videoBlob = new Blob(videoChunksRef.current, {
+          type: "video/webm",
+        });
+        onSend(videoBlob, cleanUp);
+        onClose();
+      };
+    } else {
+      cleanUp();
+      onClose();
+    }
+  };
+
+  const handleClose = () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+    }
+    cleanUp();
     onClose();
+  };
+  const cleanUp = () => {
+    setIsRecording(false);
+    setDuration(0);
+    videoChunksRef.current = [];
+    mediaRecorderRef.current = null;
   };
 
   return (
@@ -67,29 +124,27 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
                 ref={videoRef}
                 autoPlay
                 playsInline
+                
                 muted
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-4 right-4">
-                <motion.div
-                  animate={{ opacity: isRecording ? 1 : 0 }}
-                  className="px-2 py-1 bg-red-500 text-white rounded-lg text-sm"
-                >
+              {isRecording && (
+                <div className="absolute top-4 right-4 px-2 py-1 bg-red-500 text-white rounded-lg text-sm">
                   {Math.floor(duration / 60)}:
                   {(duration % 60).toString().padStart(2, "0")}
-                </motion.div>
-              </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-center space-x-4">
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-4 bg-red-500 text-white rounded-full"
               >
                 <X className="w-6 h-6" />
               </button>
               <button
-                onClick={() => setIsRecording(!isRecording)}
+                onClick={handleRecordToggle}
                 className="p-4 bg-blue-500 text-white rounded-full"
               >
                 {isRecording ? (

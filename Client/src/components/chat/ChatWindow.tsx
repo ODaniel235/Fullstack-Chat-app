@@ -10,13 +10,19 @@ import { VideoRecordingModal } from "./VideoRecordingModal";
 import useChatStore from "@/store/useChatStore";
 import useAuthStore from "@/store/useAuthStore";
 import { useToast } from "@/hooks/use-toast";
+import getBase64Size from "@/utils/sizeInBase";
 export const ChatWindow: React.FC = () => {
   const { toast } = useToast();
   const { setCall, inCall } = useCallStore();
   const { currentUser } = useStore();
 
-  const { selectedChat, messages, handleMessage, fetchMessages } =
-    useChatStore();
+  const {
+    selectedChat,
+    messages,
+    handleMessage,
+    fetchMessages,
+    handleSpecialChatSend,
+  } = useChatStore();
   const { userData, socket } = useAuthStore();
   const [isRecording, setIsRecording] = useState({
     type: "null",
@@ -50,7 +56,7 @@ export const ChatWindow: React.FC = () => {
     )
       return;
     socket.emit("markMessageAsRead", {
-      id: selectedChat.id,
+      id: selectedChat.id, 
       userId: userData.id,
     });
     console.log("Emmitted event");
@@ -80,32 +86,21 @@ export const ChatWindow: React.FC = () => {
   const record = (type: string) => {
     setIsRecording({ value: true, type: type });
   };
-  const blobToBase64 = (blob) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob); // Read the Blob as Base64
-    });
 
-  const handleAudioSend = async (audioBlob: any, wipeBlob: any) => {
-    /*     const reader = new FileReader();
-    //Will be pushing to cloudinary from here to reduce payload to backend
-    reader.onloadend = () => {
-      const base64String = reader.result.split(",")[1]; // Get base64 string from data URL
-      console.log(base64String);
-    };
-    reader.readAsDataURL(audioBlob); // Read the Blob as a Data URL */
-    const data = await blobToBase64(audioBlob);
-    await handleMessage(
-      "audio",
-      participantData.id,
-      data,
+  const handleSpecialSend = async (
+    blob: Blob,
+    wipeBlob: Function,
+    folder: string
+  ) => {
+    await handleSpecialChatSend(
+      blob,
+      wipeBlob,
       toast,
-      wipeBlob
-    ).catch((err) => console.log(err));
+      participantData.id,
+      folder
+    );
   };
-  return (
+  return (  
     <div className="h-full flex flex-col">
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between bg-white dark:bg-gray-800">
@@ -151,12 +146,16 @@ export const ChatWindow: React.FC = () => {
       <AudioRecordingModal
         isOpen={isRecording.value && isRecording.type == "audio"}
         onClose={() => setIsRecording({ type: "null", value: false })}
-        onSend={(audioBlob, wipeBlob) => handleAudioSend(audioBlob, wipeBlob)}
+        onSend={(audioBlob, wipeBlob) =>
+          handleSpecialSend(audioBlob, wipeBlob, "audio")
+        }
       />
       <VideoRecordingModal
         isOpen={isRecording.value && isRecording.type == "video"}
         onClose={() => setIsRecording({ type: "null", value: false })}
-        onSend={() => console.log("Sent")}
+        onSend={(videoBlob, cleanUp) =>
+          handleSpecialSend(videoBlob, cleanUp, "video")
+        }
       />
       {/* Message Input Area */}
       <div className="p-4 border-t bg-white dark:bg-gray-800">
