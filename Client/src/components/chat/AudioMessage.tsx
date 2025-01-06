@@ -1,4 +1,4 @@
-import  { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Play, Pause } from "lucide-react";
 
 const AudioMessage = ({ audioSrc }: { audioSrc: string }) => {
@@ -20,7 +20,19 @@ const AudioMessage = ({ audioSrc }: { audioSrc: string }) => {
     }
   };
 
-  // Update progress bar and current time
+  const handleLoadedMetadata = (audio: HTMLAudioElement) => {
+    if (audio) {
+      console.log(audio.duration);
+      // If the duration is still Infinity, continue checking
+      if (audio.duration === Infinity) {
+        console.log("Duration is still Infinity, checking again...");
+        return;
+      }
+      setDuration(audio.duration);
+      console.log("Audio metadata loaded: ", audio.duration); // Debug log for duration
+    }
+  };
+
   useEffect(() => {
     const audio = audioRef.current;
 
@@ -31,26 +43,38 @@ const AudioMessage = ({ audioSrc }: { audioSrc: string }) => {
       }
     };
 
-    const handleLoadedMetadata = () => {
-      if (audio) setDuration(audio.duration);
-    };
-
     const handleAudioEnded = () => {
       setIsPlaying(false);
       setProgress(0);
     };
 
-    // Add event listeners
-    audio?.addEventListener("timeupdate", handleTimeUpdate);
-    audio?.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio?.addEventListener("ended", handleAudioEnded);
+    // Repeatedly check for duration if it is still Infinity
+    /*    const checkDuration = () => {
+      if (audio && audio.duration === Infinity) {
+        handleLoadedMetadata(audio); // Keep calling handleLoadedMetadata
+      }
+    }; */
 
-    return () => {
-      audio?.removeEventListener("timeupdate", handleTimeUpdate);
-      audio?.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio?.removeEventListener("ended", handleAudioEnded);
-    };
-  }, []);
+    if (audio && audio.src) {
+      // Add event listeners
+      audio.addEventListener("timeupdate", handleTimeUpdate);
+      audio.addEventListener("loadedmetadata", () =>
+        console.log("Audio===>", audio.duration)
+      );
+      audio.addEventListener("ended", handleAudioEnded);
+
+      // Check for duration until it's no longer Infinity
+      /*   const interval = setInterval(checkDuration, 100); */ // Check every 100ms
+
+      // Cleanup
+      return () => {
+        /*         clearInterval(interval);  */ // Clear the interval on component unmount
+        audio.removeEventListener("timeupdate", handleTimeUpdate);
+        audio.removeEventListener("loadedmetadata", () => console.log());
+        audio.removeEventListener("ended", handleAudioEnded);
+      };
+    }
+  }, [audioSrc, audioRef]);
 
   // Format time into MM:SS
   const formatTime = (time: number) => {
@@ -87,7 +111,7 @@ const AudioMessage = ({ audioSrc }: { audioSrc: string }) => {
       </span>
 
       {/* Audio Element */}
-      <audio ref={audioRef} src={audioSrc} preload="metadata" />
+      <audio ref={audioRef} src={audioSrc} preload="auto" />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import prisma from "../db/db.js";
-import { v2 as cloudinary } from "cloudinary";
 import { getUserSocket, io } from "../socket/socket.js";
+import uploadBase64 from "../utils/cloudinary.js";
 export const sendMessage = async (req, res) => {
   const senderId = req.user.id;
   try {
@@ -30,10 +30,8 @@ export const sendMessage = async (req, res) => {
     }
     let contentLink = content;
     if (type !== "text") {
-      const link = await cloudinary.uploader.upload(content, {
-        folder: `${type}s`,
-      });
-      contentLink = link.secure_url;
+      const link = await uploadBase64(content, `${type}s`);
+      contentLink = link;
     }
     const newMessage = await prisma.message.create({
       data: {

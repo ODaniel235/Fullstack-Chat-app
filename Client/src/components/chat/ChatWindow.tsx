@@ -80,15 +80,30 @@ export const ChatWindow: React.FC = () => {
   const record = (type: string) => {
     setIsRecording({ value: true, type: type });
   };
+  const blobToBase64 = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob); // Read the Blob as Base64
+    });
+
   const handleAudioSend = async (audioBlob: any, wipeBlob: any) => {
-    const reader = new FileReader();
+    /*     const reader = new FileReader();
     //Will be pushing to cloudinary from here to reduce payload to backend
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1]; // Get base64 string from data URL
       console.log(base64String);
-      handleMessage("audio", participantData.id, base64String, toast, wipeBlob);
     };
-    reader.readAsDataURL(audioBlob); // Read the Blob as a Data URL
+    reader.readAsDataURL(audioBlob); // Read the Blob as a Data URL */
+    const data = await blobToBase64(audioBlob);
+    await handleMessage(
+      "audio",
+      participantData.id,
+      data,
+      toast,
+      wipeBlob
+    ).catch((err) => console.log(err));
   };
   return (
     <div className="h-full flex flex-col">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Send, Pause, MicOff, X, Play } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AudioRecordingModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
-
+  const { toast } = useToast();
   const audioPlayer = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -44,20 +45,24 @@ export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
       .then((stream) => {
         mediaRecorder.current = new MediaRecorder(stream);
         audioChunks.current = [];
-
         mediaRecorder.current.ondataavailable = (event) => {
           audioChunks.current.push(event.data);
         };
-
         mediaRecorder.current.onstop = () => {
           const blob = new Blob(audioChunks.current, { type: "audio/mp3" });
           setAudioBlob(blob);
           setAudioUrl(URL.createObjectURL(blob));
         };
-
         mediaRecorder.current.start();
       })
-      .catch((error) => console.error("Error accessing microphone:", error));
+      .catch((error) => {
+        console.error("Error accessing microphone:", error);
+        toast({
+          description:
+            "Could not access your microphone. Please check your settings",
+          variant: "destructive",
+        });
+      });
   };
 
   const stopRecording = () => {
@@ -67,18 +72,17 @@ export const AudioRecordingModal: React.FC<AudioRecordingModalProps> = ({
 
   const handleSend = async () => {
     if (audioBlob) {
+      console.log(audioBlob);
       onSend(audioBlob, cleanup);
       cleanup();
+
       onClose();
     }
   };
 
   const cleanup = () => {
-    setDuration(0);
     setWaveform([]);
     setIsRecording(false);
-    setAudioBlob(null);
-    setAudioUrl(null);
   };
 
   return (
