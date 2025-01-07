@@ -57,16 +57,19 @@ io.on("connection", (socket) => {
         userId: statusFetch.userId,
       },
       include: {
-        statuses: true,
+        statuses: {
+          orderBy: {
+            timestamp: "asc",
+          },
+        },
       },
     });
-
     io.to(getUserSocket(data.userId)).emit("likedStatus", {
       mine: false,
       userId: newStatusToSend.userId,
       poster: newStatusToSend.poster,
       profilePicture: newStatusToSend.profilePicture,
-      status: { ...newStatusToSend.statuses },
+      status: [...newStatusToSend.statuses],
     });
     io.to(getUserSocket(newStatusToSend.userId)).emit("newStatus", {
       mine: true,
@@ -75,6 +78,36 @@ io.on("connection", (socket) => {
   });
   socket.on("viewedStatus", async (data) => {
     console.log(data);
+    const statusToEdit = await prisma.statusData.findFirst({
+      where: { id: data.id },
+    });
+    const alreadyViewed = statusToEdit.views.includes(data.userId);
+    console.log(alreadyViewed);
+    if (alreadyViewed) {
+      console.log("View already recorder, returning...");
+      return;
+    }
+    const viewData = [...statusToEdit.views, data.userId];
+    await prisma.statusData.update({
+      where: { id: data.id },
+      data: {
+        views: viewData,
+      },
+    });
+    const updatedData = await prisma.status.findFirst({
+      where: { userId: data.posterId },
+      include: {
+        statuses: {
+          orderBy: {
+            timestamp: "asc",
+          },
+        },
+      },
+    });
+    io.to(getUserSocket(data.posterId)).emit("newStatus", {
+      mine: true,
+      status: updatedData,
+    });
   });
   socket.on("markMessageAsRead", async (data) => {
     console.log("Socket data===>", data);

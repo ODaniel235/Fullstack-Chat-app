@@ -36,7 +36,13 @@ const useSocketStore = create<any>((set, get) => ({
         }
       });
       socket.on("likedStatus", (data: any) => {
-        useStatusStore.getState().setLikeStatus(data);
+        console.log("Data===>", data);
+        useStatusStore.getState().setLikeStatus({
+          userId: data.userId,
+          poster: data.poster || "Unknown",
+          profilePicture: data.profilePicture || "",
+          statuses: data.status,
+        });
       });
       socket.on("userUpdated", (data: any) => {
         useStatusStore.getState().editStatus(data.newStatusData);

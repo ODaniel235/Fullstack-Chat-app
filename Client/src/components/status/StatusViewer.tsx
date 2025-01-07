@@ -110,7 +110,13 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   const resetInterval = () => setProgress(0);
 
   const handlePause = (value: boolean) => setPaused(value);
-
+  useEffect(() => {
+    socket.emit("viewedStatus", {
+      posterId: statusData.userId,
+      id: statusData.id,
+      userId: userData.id,
+    });
+  }, []);
   const handleLike = () => {
     socket.emit("likedStatus", {
       statusId: statusData.id,

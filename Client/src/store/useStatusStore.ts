@@ -35,28 +35,19 @@ const useStatusStore = create<any>((set, get) => ({
   },
   setLikeStatus: (data) => {
     set((state) => {
-      console.log("New like status=====>", data);
-
       const otherStatuses = state.otherStatuses.map((status) => {
         if (status.userId === data.userId) {
+          // Update the entire statuses array with the new data
           return {
             ...status,
-            statuses: status.statuses.map((statusItem) =>
-              statusItem.id === data.status.id
-                ? {
-                    ...statusItem,
-                    likes: statusItem.likes.includes(data.userId)
-                      ? statusItem.likes.filter((like) => like !== data.userId) // Unlike: remove the userId
-                      : [...statusItem.likes, data.userId], // Like: add the userId
-                  }
-                : statusItem
-            ),
+            statuses: data.statuses, // Replace the entire statuses array with the new one
           };
         }
         return status;
       });
 
-      return { otherStatuses };
+      console.log("Updated otherStatuses:", otherStatuses); // Check the updated state
+      return { otherStatuses }; // Update the state with the new statuses
     });
   },
 

@@ -103,9 +103,11 @@ export const StatusList: React.FC<StatusListProps> = ({
                       <p className="text-sm font-medium">
                         {
                           myStatuses.statuses[myStatuses.statuses.length - 1]
-                            .views
+                            .views.length
                         }{" "}
-                        views
+                        view
+                        {myStatuses.statuses[myStatuses.statuses.length - 1]
+                          .views.length > 1 && "s"}
                       </p>
                       <p className="text-sm text-gray-500">
                         {
