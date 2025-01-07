@@ -40,6 +40,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const { socket } = useAuthStore();
+  const [liked, setLiked] = useState(statusData.likes?.includes(userData.id));
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -111,8 +112,11 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
   const handlePause = (value: boolean) => setPaused(value);
 
   const handleLike = () => {
-    socket.emit("likedStatus", { id: statusData.id });
-    setIsLiked((prev) => !prev);
+    socket.emit("likedStatus", {
+      statusId: statusData.id,
+      userId: userData.id,
+    });
+    setLiked((prev) => !prev);
   };
 
   const handleReply = () => {
@@ -209,7 +213,7 @@ export const StatusViewer: React.FC<StatusViewerProps> = ({
           <button
             onClick={handleLike}
             className={`p-3 rounded-full transition transform active:scale-90 ${
-              isLiked
+              liked
                 ? "text-red-500 bg-red-500/10"
                 : "text-white bg-white/10 hover:bg-white/20"
             }`}

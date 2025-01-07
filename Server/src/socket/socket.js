@@ -21,9 +21,9 @@ io.on("connection", (socket) => {
   if (userId != "undefined") activeSocketMap[userId] = socket.id;
   console.log("User connected to socket", socket.id);
   io.emit("getOnlineUsers", Object.keys(activeSocketMap));
-  {
-    /* Disconnect Function */
-  }
+
+  /* Disconnect Function */
+
   /*   socket.on("likedStatus", async (data) => {
     console.log(data);
     const statusToLike = await prisma.statusData.update({
@@ -33,6 +33,49 @@ io.on("connection", (socket) => {
       },
     });
   }); */
+  socket.on("likedStatus", async (data) => {
+    const statusFetch = await prisma.statusData.findFirst({
+      where: {
+        id: data.statusId,
+      },
+    });
+    const alreadyLiked = statusFetch.likes.includes(data.userId);
+    let updatedLikes;
+    if (alreadyLiked) {
+      updatedLikes = statusFetch.likes.filter((id) => id !== data.userId);
+    } else {
+      updatedLikes = [...statusFetch.likes, data.userId];
+    }
+    const updatedStatusData = await prisma.statusData.update({
+      where: { id: data.statusId },
+      data: {
+        likes: updatedLikes,
+      },
+    });
+    const newStatusToSend = await prisma.status.findFirst({
+      where: {
+        userId: statusFetch.userId,
+      },
+      include: {
+        statuses: true,
+      },
+    });
+
+    io.to(getUserSocket(data.userId)).emit("likedStatus", {
+      mine: false,
+      userId: newStatusToSend.userId,
+      poster: newStatusToSend.poster,
+      profilePicture: newStatusToSend.profilePicture,
+      status: { ...newStatusToSend.statuses },
+    });
+    io.to(getUserSocket(newStatusToSend.userId)).emit("newStatus", {
+      mine: true,
+      status: newStatusToSend,
+    });
+  });
+  socket.on("viewedStatus", async (data) => {
+    console.log(data);
+  });
   socket.on("markMessageAsRead", async (data) => {
     console.log("Socket data===>", data);
     const userToUpdate = await prisma.conversation.findFirst({

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 /* import { useStore } from "../../store/useStore"; */
 import { TimeAgo } from "../../utils/dateUtils";
@@ -15,6 +15,9 @@ export const StatusList: React.FC<StatusListProps> = ({
   openCreateModal,
 }) => {
   const { myStatuses, otherStatuses } = useStatusStore();
+  useEffect(() => {
+    console.log("Status changed ===>", otherStatuses);
+  }, [otherStatuses]);
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
       <div className=" overflow-y-hidden">
@@ -107,9 +110,11 @@ export const StatusList: React.FC<StatusListProps> = ({
                       <p className="text-sm text-gray-500">
                         {
                           myStatuses.statuses[myStatuses.statuses.length - 1]
-                            .likes
+                            .likes.length
                         }{" "}
-                        likes
+                        like
+                        {myStatuses.statuses[myStatuses.statuses.length - 1]
+                          .likes.length > 0 && "s"}
                       </p>
                     </div>
                   )}

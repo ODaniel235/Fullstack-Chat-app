@@ -33,7 +33,7 @@ export const CreateStatusModal: React.FC<CreateStatusModalProps> = ({
     const data = statusType == "text" ? content : inputData;
     const bgColor = statusType == "text" ? backgroundColor : null;
     console.log(data);
-    await createStatus(statusType, data, toast, null);
+    await createStatus(statusType, data, toast, bgColor);
 
     onClose();
     setContent("");

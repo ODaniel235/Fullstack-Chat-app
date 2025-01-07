@@ -26,6 +26,7 @@ const useSocketStore = create<any>((set, get) => ({
         if (data.mine) {
           useStatusStore.getState().setMyStatus(data.status);
         } else {
+          console.log(data);
           useStatusStore.getState().setOtherStatuses({
             userId: data.userId,
             poster: data.poster || "Unknown",
@@ -33,6 +34,9 @@ const useSocketStore = create<any>((set, get) => ({
             statuses: [data.status], // Wrap the single status in an array
           });
         }
+      });
+      socket.on("likedStatus", (data: any) => {
+        useStatusStore.getState().setLikeStatus(data);
       });
       socket.on("userUpdated", (data: any) => {
         useStatusStore.getState().editStatus(data.newStatusData);

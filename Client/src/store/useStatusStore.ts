@@ -33,6 +33,33 @@ const useStatusStore = create<any>((set, get) => ({
       return { otherStatuses };
     });
   },
+  setLikeStatus: (data) => {
+    set((state) => {
+      console.log("New like status=====>", data);
+
+      const otherStatuses = state.otherStatuses.map((status) => {
+        if (status.userId === data.userId) {
+          return {
+            ...status,
+            statuses: status.statuses.map((statusItem) =>
+              statusItem.id === data.status.id
+                ? {
+                    ...statusItem,
+                    likes: statusItem.likes.includes(data.userId)
+                      ? statusItem.likes.filter((like) => like !== data.userId) // Unlike: remove the userId
+                      : [...statusItem.likes, data.userId], // Like: add the userId
+                  }
+                : statusItem
+            ),
+          };
+        }
+        return status;
+      });
+
+      return { otherStatuses };
+    });
+  },
+
   editStatus: (data) => {
     set((state) => {
       const updatedStatuses = state.otherStatuses.map((status) => {

@@ -67,11 +67,24 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
   }, [isOpen]);
 
   const handleRecordToggle = () => {
+    if (!mediaRecorderRef.current) return;
+
+    const recorderState = mediaRecorderRef.current.state;
+
     if (!isRecording) {
-      mediaRecorderRef.current?.resume();
+      // If the recorder is inactive, start recording
+      if (recorderState === "inactive") {
+        mediaRecorderRef.current.start();
+      } else if (recorderState === "paused") {
+        // If the recorder is paused, resume recording
+        mediaRecorderRef.current.resume();
+      }
       setIsRecording(true);
     } else {
-      mediaRecorderRef.current?.pause();
+      // If the recorder is recording, pause it
+      if (recorderState === "recording") {
+        mediaRecorderRef.current.pause();
+      }
       setIsRecording(false);
     }
   };
