@@ -37,10 +37,7 @@ export const ChatWindow: React.FC = () => {
       navigate("/chats");
       return;
     }
-    fetchMessages(participantData.id, toast, navigate).catch((err) => {
-      console.error("Error fetching messages:", err);
-      navigate("/chats");
-    });
+    fetchMessages(participantData.id, toast, navigate)
   }, [participantData]);
   useEffect(() => {
     if (!selectedChat) {
@@ -56,7 +53,7 @@ export const ChatWindow: React.FC = () => {
     )
       return;
     socket.emit("markMessageAsRead", {
-      id: selectedChat.id, 
+      id: selectedChat.id,
       userId: userData.id,
     });
     console.log("Emmitted event");
@@ -100,7 +97,7 @@ export const ChatWindow: React.FC = () => {
       folder
     );
   };
-  return (  
+  return (
     <div className="h-full flex flex-col">
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between bg-white dark:bg-gray-800">
@@ -153,8 +150,8 @@ export const ChatWindow: React.FC = () => {
       <VideoRecordingModal
         isOpen={isRecording.value && isRecording.type == "video"}
         onClose={() => setIsRecording({ type: "null", value: false })}
-        onSend={(videoBlob, cleanUp) =>
-          handleSpecialSend(videoBlob, cleanUp, "video")
+        onSend={(videoBlob, wipe) =>
+          handleSpecialSend(videoBlob, wipe, "video")
         }
       />
       {/* Message Input Area */}

@@ -1,7 +1,4 @@
-import { status } from "@prisma/client";
 import prisma from "../db/db.js";
-import { v2 as cloudinary } from "cloudinary";
-import { disconnect } from "mongoose";
 import cron from "node-cron";
 import { getUserSocket, io } from "../socket/socket.js";
 import uploadBase64 from "../utils/cloudinary.js";
@@ -18,6 +15,7 @@ export const createStatus = async (req, res) => {
     if (type !== "text") {
       try {
         contentData = await uploadBase64(content, `${type}s`);
+        console.log(contentData);
       } catch (uploadError) {
         return res
           .status(500)

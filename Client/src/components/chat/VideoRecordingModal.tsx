@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Pause, Play, X } from "lucide-react";
+import { Send, Pause, Play, X, Loader } from "lucide-react";
 
 interface VideoRecordingModalProps {
   isOpen: boolean;
@@ -17,6 +17,7 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoChunksRef = useRef<BlobPart[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [isSending, setIsSending] = useState<boolean>(false);
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
@@ -25,8 +26,6 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
       interval = setInterval(() => {
         setDuration((prev) => prev + 1);
       }, 1000);
-    } else {
-      setDuration(0);
     }
     return () => clearInterval(interval);
   }, [isRecording]);
@@ -69,15 +68,16 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
 
   const handleRecordToggle = () => {
     if (!isRecording) {
-      mediaRecorderRef.current?.start();
+      mediaRecorderRef.current?.resume();
       setIsRecording(true);
     } else {
-      mediaRecorderRef.current?.stop();
+      mediaRecorderRef.current?.pause();
       setIsRecording(false);
     }
   };
 
   const handleSend = () => {
+    setIsSending(true);
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -86,8 +86,8 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
         const videoBlob = new Blob(videoChunksRef.current, {
           type: "video/webm",
         });
-        onSend(videoBlob, cleanUp);
-        onClose();
+        onSend(videoBlob, wipe);
+        /*       setIsSending(false); */
       };
     } else {
       cleanUp();
@@ -107,6 +107,14 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
     setDuration(0);
     videoChunksRef.current = [];
     mediaRecorderRef.current = null;
+    setIsSending(false);
+  };
+  const wipe = () => {
+    setIsRecording(false);
+    setDuration(0);
+    videoChunksRef.current = [];
+    mediaRecorderRef.current = null;
+    onClose();
   };
 
   return (
@@ -124,7 +132,6 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
                 ref={videoRef}
                 autoPlay
                 playsInline
-                
                 muted
                 className="w-full h-full object-cover"
               />
@@ -158,7 +165,11 @@ export const VideoRecordingModal: React.FC<VideoRecordingModalProps> = ({
                 className="p-4 bg-green-500 text-white rounded-full"
                 disabled={!isRecording && duration === 0}
               >
-                <Send className="w-6 h-6" />
+                {isSending ? (
+                  <Loader className=" w-6 h-6 animate-spin" />
+                ) : (
+                  <Send className="w-6 h-6" />
+                )}
               </button>
             </div>
           </div>
