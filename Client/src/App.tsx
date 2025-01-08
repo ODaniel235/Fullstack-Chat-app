@@ -26,6 +26,7 @@ import { useToast } from "./hooks/use-toast";
 import useThemeStore from "./store/useThemeStore";
 import useSocketStore from "./store/useSocketStore";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
+
 function App() {
   const { toast } = useToast();
   const { userData, checkAuth, isCheckingAuth, socket } = useAuthStore();

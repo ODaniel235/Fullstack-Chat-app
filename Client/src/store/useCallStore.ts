@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
-import SimplePeer from "simple-peer";
 import { create } from "zustand";
-
+import SimplePeer from "simple-peer";
+import crypto from "crypto-browserify";
 // Initialize Socket.IO client
 const socket = io("http://localhost:5000"); // Replace with your server's URL
 
@@ -54,7 +54,43 @@ const useCallStore = create((set, get) => ({
     try {
       console.log("Initiaitng");
       const stream = await get().getLocalStream();
-      const peer = new SimplePeer({ trickle: true, initiator: true, stream });
+      if (!window.crypto || !window.crypto.getRandomValues) {
+        alert(
+          "Your browser doesn't support secure random number generation required for video calls."
+        );
+        return;
+      }
+
+      const peer = new SimplePeer({
+        trickle: true,
+        initiator: true,
+        stream,
+        config: {
+          iceServers: [
+            {
+              urls: "stun:stun.l.google.com:19302", // Google’s public STUN server
+            },
+          ],
+        },
+      });
+      peer.on("signal", (signal) => {
+        console.log("Send this signal to the remote peer: ", signal);
+        // Send the signal via WebSocket or any signaling server
+      });
+
+      peer.on("stream", (remoteStream) => {
+        console.log("Remote stream received");
+        get().setRemoteStream(remoteStream);
+      });
+
+      peer.on("error", (err) => console.error("Peer error:", err));
+
+      peer.on("close", () => {
+        console.log("Call ended");
+        get().wipeCallData();
+      });
+
+      get().setPeer(peer);
     } catch (error) {
       console.log("Error====>", error);
     }
