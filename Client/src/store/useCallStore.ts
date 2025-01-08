@@ -54,12 +54,7 @@ const useCallStore = create((set, get) => ({
     try {
       console.log("Initiaitng");
       const stream = await get().getLocalStream();
-      if (!window.crypto || !window.crypto.getRandomValues) {
-        alert(
-          "Your browser doesn't support secure random number generation required for video calls."
-        );
-        return;
-      }
+  
 
       const peer = new SimplePeer({
         trickle: true,
