@@ -5,13 +5,12 @@ import { motion } from "framer-motion";
 import { useCallStore } from "../../store/useStore";
 import { VideoCallModal } from "../chat/VideoCallModal";
 import { CallModal } from "../chat/CallModal";
-import { useStore } from "zustand";
 export const MainLayout: React.FC = () => {
   const {
     callType,
     endCall,
     inCall,
-  
+
     userData,
   } = useCallStore();
   return (
@@ -25,10 +24,7 @@ export const MainLayout: React.FC = () => {
       >
         <Outlet />
 
-        <VideoCallModal
-          isOpen={inCall && callType == "video"}
-          onClose={endCall}
-        />
+        <VideoCallModal onClose={endCall} />
         <CallModal
           isOpen={inCall && callType == "audio"}
           onClose={endCall}

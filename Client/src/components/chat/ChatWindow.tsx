@@ -3,8 +3,7 @@ import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { Video, Phone, Mic } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { sampleChats } from "../../data";
-import { useCallStore, useStore } from "../../store/useStore";
+import useCallStore from "@/store/useCallStore";
 import { AudioRecordingModal } from "./AudioRecordingModal";
 import { VideoRecordingModal } from "./VideoRecordingModal";
 import useChatStore from "@/store/useChatStore";
@@ -13,8 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import getBase64Size from "@/utils/sizeInBase";
 export const ChatWindow: React.FC = () => {
   const { toast } = useToast();
-  const { setCall, inCall } = useCallStore();
-  const { currentUser } = useStore();
+  const { inCall, incomingCall, initiateCall } = useCallStore();
 
   const {
     selectedChat,
@@ -37,7 +35,7 @@ export const ChatWindow: React.FC = () => {
       navigate("/chats");
       return;
     }
-    fetchMessages(participantData.id, toast, navigate)
+    fetchMessages(participantData.id, toast, navigate);
   }, [participantData]);
   useEffect(() => {
     if (!selectedChat) {
@@ -59,27 +57,7 @@ export const ChatWindow: React.FC = () => {
     console.log("Emmitted event");
   }, [selectedChat, messages]);
   console.log(participantData);
-  const startCall = (type: string) => {
-    if (type == "video") {
-      setCall(
-        participantData,
-        "video",
-        currentUser?.id,
-        participantData?.id,
-        "random",
-        "outgoing"
-      );
-    } else {
-      setCall(
-        participantData,
-        "audio",
-        currentUser?.id,
-        participantData?.id,
-        "random",
-        "outgoing"
-      );
-    }
-  };
+
   const record = (type: string) => {
     setIsRecording({ value: true, type: type });
   };
@@ -96,6 +74,9 @@ export const ChatWindow: React.FC = () => {
       participantData.id,
       folder
     );
+  };
+  const startCall = async () => {
+    await initiateCall(participantData.id);
   };
   return (
     <div className="h-full flex flex-col">
@@ -121,16 +102,16 @@ export const ChatWindow: React.FC = () => {
         <div className="flex space-x-2">
           {/* TODO: Implement audio call functionality */}
           <button
-            disabled={inCall}
-            onClick={() => startCall("audio")}
+            disabled={incomingCall || inCall}
+            onClick={startCall}
             className="p-2 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-700"
           >
             <Phone className="w-5 h-5" />
           </button>
           {/* TODO: Implement video call functionality */}
           <button
-            disabled={inCall}
-            onClick={() => startCall("video")}
+            disabled={incomingCall || inCall}
+            onClick={startCall}
             className="p-2 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-700"
           >
             <Video className="w-5 h-5" />
