@@ -10,11 +10,9 @@ import {
 } from "lucide-react";
 import useCallStore from "@/store/useCallStore";
 
-interface VideoCallModalProps {
-  onClose: () => void;
-}
 
-export const VideoCallModal: React.FC<VideoCallModalProps> = ({ onClose }) => {
+
+export const VideoCallModal: React.FC = () => {
   const {
     inCall,
     incomingCall,
@@ -22,6 +20,7 @@ export const VideoCallModal: React.FC<VideoCallModalProps> = ({ onClose }) => {
     stream,
     remoteStream,
     initiateCall,
+    callData,
     answerCall,
     wipeCallData,
     setStream,
@@ -115,7 +114,7 @@ export const VideoCallModal: React.FC<VideoCallModalProps> = ({ onClose }) => {
 
   const handleEndCall = () => {
     wipeCallData();
-    onClose();
+
   };
 
   const handleAnswerCall = () => {
@@ -123,16 +122,17 @@ export const VideoCallModal: React.FC<VideoCallModalProps> = ({ onClose }) => {
       answerCall(incomingCallData.signal);
     }
   };
-
+  /* 
   useEffect(() => {
     if (incomingCall) {
       handleAnswerCall();
     }
   }, [incomingCall]);
-
+ */
   return (
     <AnimatePresence>
-      {incomingCall || inCall ? (
+      {(incomingCall && incomingCallData.type == "video") ||
+      (inCall && callData.type == "video") ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

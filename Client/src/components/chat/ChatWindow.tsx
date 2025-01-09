@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { Video, Phone, Mic } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import useCallStore from "@/store/useCallStore";
 import { AudioRecordingModal } from "./AudioRecordingModal";
 import { VideoRecordingModal } from "./VideoRecordingModal";
 import useChatStore from "@/store/useChatStore";
 import useAuthStore from "@/store/useAuthStore";
 import { useToast } from "@/hooks/use-toast";
-import getBase64Size from "@/utils/sizeInBase";
 export const ChatWindow: React.FC = () => {
   const { toast } = useToast();
   const { inCall, incomingCall, initiateCall } = useCallStore();
@@ -76,7 +75,7 @@ export const ChatWindow: React.FC = () => {
     );
   };
   const startCall = async () => {
-    await initiateCall(participantData.id);
+    await initiateCall(participantData);
   };
   return (
     <div className="h-full flex flex-col">

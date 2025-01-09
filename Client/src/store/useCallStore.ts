@@ -1,11 +1,11 @@
 import { io } from "socket.io-client";
 import { create } from "zustand";
 import SimplePeer from "simple-peer";
-import crypto from "crypto-browserify";
+import useAuthStore from "./useAuthStore";
 // Initialize Socket.IO client
 const socket = io("http://localhost:5000"); // Replace with your server's URL
 
-const useCallStore = create((set, get) => ({
+const useCallStore = create<any>((set, get) => ({
   incomingCall: false,
   incomingCallData: null,
   inCall: false,
@@ -26,7 +26,12 @@ const useCallStore = create((set, get) => ({
     });
   },
   setIncomingCall: (data) => {
-    set({ incomingCall: true, incomingCallData: data });
+    set({
+      incomingCall: true,
+      incomingCallData: data.callData,
+      callerData: data.callerData,
+      callData: { initiator: false, ...data.callData },
+    });
   },
   setPeer: (peer) => {
     set({ peer });
@@ -42,6 +47,7 @@ const useCallStore = create((set, get) => ({
       /*       const callType = get().incomingCallData?.type === "video" ? true : false; */
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
+        /*      video: callType, */
       });
 
       get().setStream(stream);
@@ -50,11 +56,15 @@ const useCallStore = create((set, get) => ({
       console.error("Error accessing media devices:", error);
     }
   },
-  initiateCall: async (receiverId: string) => {
+  initiateCall: async (receiverData: any) => {
     try {
+      const socket = useAuthStore.getState().socket;
+      if (!socket) {
+        console.log("Socket refused");
+        return;
+      }
       console.log("Initiaitng");
       const stream = await get().getLocalStream();
-  
 
       const peer = new SimplePeer({
         trickle: true,
@@ -68,9 +78,24 @@ const useCallStore = create((set, get) => ({
           ],
         },
       });
+      set({
+        inCall: true,
+        callerData: {
+          name: receiverData.name,
+          id: receiverData.id,
+          avatar: receiverData.avatar,
+        },
+        callData: { initiator: true, type: "audio" },
+      });
       peer.on("signal", (signal) => {
         console.log("Send this signal to the remote peer: ", signal);
         // Send the signal via WebSocket or any signaling server
+        socket.emit("sendSignal", {
+          signal,
+          from: useAuthStore.getState().userData,
+          to: receiverData.id,
+          type: "audio",
+        });
       });
 
       peer.on("stream", (remoteStream) => {
@@ -92,17 +117,28 @@ const useCallStore = create((set, get) => ({
   },
   answerCall: async (remoteSignal) => {
     const stream = await get().getLocalStream();
+    console.log(remoteSignal);
     const peer = new SimplePeer({
       trickle: false,
       initiator: false,
       stream,
     });
+    set({
+      inCall: true,
+      incomingCall: false,
+      callData: get().incomingCallData,
+    });
 
     peer.signal(remoteSignal);
 
     peer.on("signal", (signal) => {
-      socket.emit("answerSignal", { signal, to: get().incomingCallData?.from });
+      socket.emit("answerSignal", {
+        signal,
+        to: get().incomingCallData?.callerData.id,
+        type: "audio",
+      });
     });
+
 
     peer.on("stream", (remoteStream) => {
       get().setRemoteStream(remoteStream);
@@ -119,6 +155,8 @@ const useCallStore = create((set, get) => ({
     set({
       inCall: false,
       callData: null,
+      incomingCall: false,
+      incomingCallData: null,
       callerData: null,
       peer: null,
       stream: null,

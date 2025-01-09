@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Mic, Video } from "lucide-react";
 import { JoinGroupModal } from "./JoinGroupModal";
-import { useStore } from "../../store/useStore";
+
 import { sampleGroups } from "../../data";
 
 export const GroupList: React.FC = () => {
   const navigate = useNavigate();
   const [showJoinModal, setShowJoinModal] = React.useState(false);
-  const { groups } = useStore();
+
 
   const renderLastMessage = (message: any) => {
     switch (message.type) {

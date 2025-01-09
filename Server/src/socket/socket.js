@@ -160,5 +160,30 @@ io.on("connection", (socket) => {
     delete activeSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(activeSocketMap));
   });
+  socket.on("sendSignal", async (data) => {
+    const userSendingTo = await prisma.user.findFirst({
+      where: { id: data.to },
+    });
+    const userBlocked = userSendingTo.blockedUsers.includes(data.from.id);
+    if (userBlocked) {
+      console.log("Blocked by user");
+      return;
+    }
+    io.to(getUserSocket(data.to)).emit("incomingSignal", {
+      callData: {
+        type: data.type,
+      },
+      callerData: {
+        name: data.from.name,
+        id: data.from.id,
+        avatar: data.from.avatar,
+        email: data.from.email,
+      },
+      signal: data.signal,
+    });
+  });
+  socket.on("answerSignal", async(data)=>{
+    console.log(data)
+  })
 });
 export { app, server, io, getUserSocket };

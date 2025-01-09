@@ -135,7 +135,7 @@ export const SignIn: React.FC = () => {
                 name="email"
                 onChange={handleChange}
                 value={data.email}
-                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-black"
                 placeholder="Enter your email"
               />
             </div>
@@ -147,7 +147,7 @@ export const SignIn: React.FC = () => {
                 name="password"
                 onChange={handleChange}
                 value={data.password}
-                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-black"
                 placeholder="Enter your password"
               />
             </div>

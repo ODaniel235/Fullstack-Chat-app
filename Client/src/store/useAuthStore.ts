@@ -281,7 +281,7 @@ const useAuthStore = create<any>((set, get) => ({
   connectSocket: () => {
     const { userData } = get();
     if (!userData || get().socket?.connected) return;
-    const socket = io(BASE_URL, {
+    const socket = io("http://localhost:8080", {
       query: {
         userId: userData.id,
       },

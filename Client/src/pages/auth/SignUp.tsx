@@ -143,7 +143,7 @@ export const SignUp: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500  dark:text-black"
                   name="firstname"
                   value={data.firstname}
                   onChange={handleChange}
@@ -156,7 +156,7 @@ export const SignUp: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500  dark:text-black"
                   name="lastname"
                   value={data.lastname}
                   onChange={handleChange}
@@ -169,7 +169,7 @@ export const SignUp: React.FC = () => {
               <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
-                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500  dark:text-black"
                 name="email"
                 value={data.email}
                 onChange={handleChange}
@@ -181,7 +181,7 @@ export const SignUp: React.FC = () => {
               <label className="block text-sm font-medium mb-1">Password</label>
               <input
                 type="password"
-                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full p-3 rounded-lg border-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500  dark:text-black"
                 name="password"
                 value={data.password}
                 onChange={handleChange}

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import useAuthStore from "./useAuthStore";
 import useChatStore from "./useChatStore";
 import useStatusStore from "./useStatusStore";
+import useCallStore from "./useCallStore";
 
 const useSocketStore = create<any>((set, get) => ({
   listenToSocket: () => {
@@ -49,6 +50,15 @@ const useSocketStore = create<any>((set, get) => ({
         console.log(data);
         useChatStore.getState().editUser(data.updatedData);
       });
+      socket.on("incomingSignal", (data: any) => {
+        console.log("Incoming call===>", data);
+        useCallStore.getState().setIncomingCallData({
+          callData: data.callData,
+          callerData: data.callerData,
+          signal: data.signal,
+        });
+      });
+      socket.on("answerSignal");
     }
   },
 }));

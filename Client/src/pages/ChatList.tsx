@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useStore } from "../store/useStore";
+
 import { formatDistanceToNow } from "../utils/dateUtils";
 import useChatStore from "@/store/useChatStore";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,7 @@ export const ChatList: React.FC = () => {
   const navigate = useNavigate();
   const { chats } = useChatStore();
   const [mappedChats, setMappedChats] = useState([...chats]);
-  const { setActiveChat } = useStore();
+
   const { fetchConversation, handleChatClick } = useChatStore();
   const { userData } = useAuthStore();
   const [showJoinModal, setShowJoinModal] = useState<boolean>(false);
@@ -28,7 +28,6 @@ export const ChatList: React.FC = () => {
     setMappedChats(chats);
   }, [chats]);
   const handleClick = (chatId: string) => {
-    setActiveChat(chatId);
     handleChatClick(chatId);
     navigate(`/chat/${chatId}`);
   };

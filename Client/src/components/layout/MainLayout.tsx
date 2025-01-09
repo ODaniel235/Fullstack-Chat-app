@@ -1,18 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { motion } from "framer-motion";
-import { useCallStore } from "../../store/useStore";
 import { VideoCallModal } from "../chat/VideoCallModal";
 import { CallModal } from "../chat/CallModal";
 export const MainLayout: React.FC = () => {
-  const {
-    callType,
-    endCall,
-    inCall,
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    if (Notification.permission === "granted") return;
 
-    userData,
-  } = useCallStore();
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      console.error("Notification permission denied");
+    }
+  };
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
   return (
     <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
       <Sidebar />
@@ -24,12 +28,8 @@ export const MainLayout: React.FC = () => {
       >
         <Outlet />
 
-        <VideoCallModal onClose={endCall} />
-        <CallModal
-          isOpen={inCall && callType == "audio"}
-          onClose={endCall}
-          user={userData}
-        />
+        <VideoCallModal />
+        <CallModal />
       </motion.main>
     </div>
   );
