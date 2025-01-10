@@ -52,13 +52,15 @@ const useSocketStore = create<any>((set, get) => ({
       });
       socket.on("incomingSignal", (data: any) => {
         console.log("Incoming call===>", data);
-        useCallStore.getState().setIncomingCallData({
-          callData: data.callData,
+        useCallStore.getState().setIncomingCall({
+          callData: { ...data.callData, signal: data.signal },
           callerData: data.callerData,
           signal: data.signal,
         });
       });
-      socket.on("answerSignal");
+      socket.on("answerSignal", (data) => {
+        console.log(data);
+      });
     }
   },
 }));

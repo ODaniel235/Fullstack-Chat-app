@@ -115,13 +115,21 @@ const useCallStore = create<any>((set, get) => ({
       console.log("Error====>", error);
     }
   },
-  answerCall: async (remoteSignal) => {
+  answerCall: async (remoteSignal: any) => {
+    console.log("Signal===>", remoteSignal);
     const stream = await get().getLocalStream();
     console.log(remoteSignal);
     const peer = new SimplePeer({
       trickle: false,
       initiator: false,
       stream,
+      config: {
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302", // Google’s public STUN server
+          },
+        ],
+      },
     });
     set({
       inCall: true,
@@ -132,13 +140,17 @@ const useCallStore = create<any>((set, get) => ({
     peer.signal(remoteSignal);
 
     peer.on("signal", (signal) => {
+      console.log("Signals sent===>", {
+        signal,
+        to: get().incomingCallData?.callerData.id,
+       });
+
       socket.emit("answerSignal", {
         signal,
         to: get().incomingCallData?.callerData.id,
         type: "audio",
       });
     });
-
 
     peer.on("stream", (remoteStream) => {
       get().setRemoteStream(remoteStream);

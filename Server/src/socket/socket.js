@@ -182,8 +182,8 @@ io.on("connection", (socket) => {
       signal: data.signal,
     });
   });
-  socket.on("answerSignal", async(data)=>{
-    console.log(data)
-  })
+  socket.on("answerSignal", async (data) => {
+    console.log("This is the answer signal ===>", data);
+  });
 });
 export { app, server, io, getUserSocket };
