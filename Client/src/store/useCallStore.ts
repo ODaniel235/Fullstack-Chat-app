@@ -69,11 +69,20 @@ const useCallStore = create<any>((set, get) => ({
       const peer = new SimplePeer({
         trickle: true,
         initiator: true,
+        offerOptions: {
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: get().callData?.type == "video",
+        },
         stream,
         config: {
           iceServers: [
             {
-              urls: "stun:stun.l.google.com:19302", // Google’s public STUN server
+              urls: "stun:numb.viagenie.ca",
+            },
+            {
+              urls: "turn:numb.viagenie.ca",
+              username: "username",
+              credential: "password",
             },
           ],
         },
@@ -116,51 +125,96 @@ const useCallStore = create<any>((set, get) => ({
     }
   },
   answerCall: async (remoteSignal: any) => {
-    console.log("Signal===>", remoteSignal);
-    const stream = await get().getLocalStream();
-    console.log(remoteSignal);
-    const peer = new SimplePeer({
-      trickle: false,
-      initiator: false,
-      stream,
-      config: {
-        iceServers: [
-          {
-            urls: "stun:stun.l.google.com:19302", // Google’s public STUN server
-          },
-        ],
-      },
-    });
-    set({
-      inCall: true,
-      incomingCall: false,
-      callData: get().incomingCallData,
-    });
+    try {
+      const socket = useAuthStore.getState().socket;
+      if (!socket) {
+        console.log("Socket refused");
+        return;
+      }
 
-    peer.signal(remoteSignal);
-
-    peer.on("signal", (signal) => {
-      console.log("Signals sent===>", {
-        signal,
-        to: get().incomingCallData?.callerData.id,
-       });
-
-      socket.emit("answerSignal", {
-        signal,
-        to: get().incomingCallData?.callerData.id,
-        type: "audio",
+      if (!remoteSignal) {
+        console.error("Invalid remoteSignal received.");
+        return;
+      }
+      const stream = await get().getLocalStream();
+      if (!stream) {
+        console.log("Local stream is null or undefined.");
+        return;
+      }
+      
+      const peer = new SimplePeer({
+        trickle: true,
+        initiator: false,
+        offerOptions: {
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: get().callData?.type == "video",
+        },
+        stream,
+        config: {
+          iceServers: [
+            {
+              urls: "stun:numb.viagenie.ca",
+            },
+            {
+              urls: "turn:numb.viagenie.ca",
+              username: "username",
+              credential: "password",
+            },
+          ],
+        },
       });
-    });
 
-    peer.on("stream", (remoteStream) => {
-      get().setRemoteStream(remoteStream);
-    });
+      // Update state
+      set({
+        inCall: true,
+        incomingCall: false,
+        callData: get().incomingCallData,
+      });
 
-    peer.on("error", (err) => console.error("Peer error:", err));
-    peer.on("close", () => get().wipeCallData());
+      // Handle incoming signal from the caller
+      peer.signal(remoteSignal);
 
-    get().setPeer(peer);
+      // Handle outgoing signal to the caller
+      peer.on("signal", (signal) => {
+        console.log("Sending answer signal to the backend:", {
+          signal,
+          to: get().incomingCallData?.callerData.id,
+          socket,
+        });
+
+        socket.emit("answerCall", {
+          signal,
+          to: get().incomingCallData?.callerData.id,
+          type: "audio",
+        });
+      });
+
+      // Handle the remote stream
+      peer.on("stream", (remoteStream) => {
+        console.log("Remote stream received.");
+        get().setRemoteStream(remoteStream);
+      });
+
+      // Handle errors
+      peer.on("error", (err) => {
+        console.error("Peer connection error:", err);
+        get().wipeCallData();
+      });
+
+      // Handle call closure
+      peer.on("close", () => {
+        console.log("Call ended.");
+        get().wipeCallData();
+      });
+
+      // Save the peer instance
+      get().setPeer(peer);
+    } catch (error) {
+      console.error("Error answering call:", error);
+      get().wipeCallData();
+    }
   },
+
   wipeCallData: () => {
     const peer = get().peer;
     if (peer) peer.destroy();

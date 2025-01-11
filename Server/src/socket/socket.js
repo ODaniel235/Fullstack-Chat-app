@@ -19,7 +19,6 @@ const getUserSocket = (recipientId) => {
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId != "undefined") activeSocketMap[userId] = socket.id;
-  console.log("User connected to socket", socket.id);
   io.emit("getOnlineUsers", Object.keys(activeSocketMap));
 
   /* Disconnect Function */
@@ -182,8 +181,17 @@ io.on("connection", (socket) => {
       signal: data.signal,
     });
   });
-  socket.on("answerSignal", async (data) => {
-    console.log("This is the answer signal ===>", data);
+  socket.on("answerCall", (data) => {
+    console.log("Answer signal received:", data);
+    const { signal, to } = data;
+
+    // Forward the signal to the intended recipient
+    const recipientSocket = getSocketById(to);
+    if (recipientSocket) {
+      recipientSocket.emit("signal", signal);
+    } else {
+      console.error("Recipient socket not found for ID:", to);
+    }
   });
 });
 export { app, server, io, getUserSocket };

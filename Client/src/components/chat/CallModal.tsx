@@ -11,6 +11,7 @@ export const CallModal: React.FC = () => {
     incomingCallData,
     callData,
     callerData,
+    wipeCallData,
     answerCall,
     remoteStream,
   } = useCallStore();
@@ -58,11 +59,14 @@ export const CallModal: React.FC = () => {
     setDuration(0);
     audioRef.current?.pause();
     setStatus(null);
+    wipeCallData();
   };
   const acceptCall = () => {
     console.log("Signal====>", incomingCallData);
     answerCall(incomingCallData.signal);
   };
+  if (!incomingCall && !inCall && !incomingCallData && !callData && !callerData)
+    return;
   return (
     <AnimatePresence>
       {status && (

@@ -3,8 +3,7 @@ import { Loader, Send } from "lucide-react";
 import analyzeText from "@/utils/chatModeration";
 import { useToast } from "@/hooks/use-toast";
 import useChatStore from "@/store/useChatStore";
-import useAuthStore from "@/store/useAuthStore";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 interface MessageInputProp {
   participantId: any;
 }
@@ -12,13 +11,12 @@ export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState<boolean>(false);
-  const { selectedChat, handleMessage } = useChatStore();
+  const { handleMessage } = useChatStore();
   const location = useLocation();
-  const { userData } = useAuthStore();
-  const navigate = useNavigate();
   // TODO: Implement message sending functionality
   const wipeMessage = () => {
     setMessage("");
+    setIsSending(false);
   };
   const handleSend = async () => {
     setIsSending(true);
@@ -42,8 +40,7 @@ export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
       message,
       toast,
       wipeMessage,
-      location.pathname,
-    
+      location.pathname
     );
   };
 
