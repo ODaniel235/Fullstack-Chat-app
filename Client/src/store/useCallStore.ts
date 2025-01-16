@@ -67,14 +67,14 @@ const useCallStore = create<any>((set, get) => ({
       const stream = await get().getLocalStream();
 
       const peer = new SimplePeer({
-        trickle: true,
+        trickle: false,
         initiator: true,
-        offerOptions: {
+        /*    offerOptions: {
           offerToReceiveAudio: true,
           offerToReceiveVideo: get().callData?.type == "video",
-        },
+        }, */
         stream,
-        config: {
+        /*     config: {
           iceServers: [
             {
               urls: "stun:numb.viagenie.ca",
@@ -85,7 +85,7 @@ const useCallStore = create<any>((set, get) => ({
               credential: "password",
             },
           ],
-        },
+        }, */
       });
       set({
         inCall: true,
@@ -141,16 +141,16 @@ const useCallStore = create<any>((set, get) => ({
         console.log("Local stream is null or undefined.");
         return;
       }
-      
+
       const peer = new SimplePeer({
-        trickle: true,
+        trickle: false,
         initiator: false,
-        offerOptions: {
+        /*  offerOptions: {
           offerToReceiveAudio: true,
           offerToReceiveVideo: get().callData?.type == "video",
-        },
+        }, */
         stream,
-        config: {
+        /*   config: {
           iceServers: [
             {
               urls: "stun:numb.viagenie.ca",
@@ -161,7 +161,7 @@ const useCallStore = create<any>((set, get) => ({
               credential: "password",
             },
           ],
-        },
+        }, */
       });
 
       // Update state

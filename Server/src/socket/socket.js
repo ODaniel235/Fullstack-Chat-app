@@ -168,6 +168,7 @@ io.on("connection", (socket) => {
       console.log("Blocked by user");
       return;
     }
+    console.log("Signal Data===>", data);
     io.to(getUserSocket(data.to)).emit("incomingSignal", {
       callData: {
         type: data.type,

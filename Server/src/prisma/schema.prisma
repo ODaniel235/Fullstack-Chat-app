@@ -38,6 +38,7 @@ model User{
   blockedUsers      String[]
   conversations     Conversation[]
   messages          Message[]
+  groups            Groups[]
 }
 model Conversation {
   id                String          @id @default(cuid())
@@ -57,9 +58,11 @@ enum MessageType{
 model Message{
   id         String        @id     @default(cuid())
   senderId          String
-  conversationId    String   
+  conversationId    String
+  groupId           String?   
   conversation      Conversation    @relation(fields:[conversationId], references:[id])
   sender            User            @relation(fields:[senderId], references:[id])
+  group             Groups?      @relation(fields:[groupId], references:[id])
   type              MessageType
   content           String
   isRead            Boolean         @default(false)
@@ -87,4 +90,15 @@ model StatusData{
   likes                 String[]     @default([]) 
   backgroundColor       String?
   user                  Status      @relation(fields:[userId], references:[userId])
+}
+
+model Groups{
+  id              String        @id     @default(cuid())
+  name            String
+  avatar          String?
+  members         User[]
+  messages        Message[]
+  admins          String[]
+  viewed          String[]
+  lastMessage     Json?
 }

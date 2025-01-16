@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { Video, Phone, Mic } from "lucide-react";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useCallStore from "@/store/useCallStore";
 import { AudioRecordingModal } from "./AudioRecordingModal";
 import { VideoRecordingModal } from "./VideoRecordingModal";
@@ -75,7 +75,10 @@ export const ChatWindow: React.FC = () => {
     );
   };
   const startCall = async () => {
-    await initiateCall(participantData);
+    toast({
+      description:
+        "Function not yet added, please use the voice or audio message function instead",
+    });
   };
   return (
     <div className="h-full flex flex-col">
