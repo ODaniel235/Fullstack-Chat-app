@@ -1,28 +1,22 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import useChatStore from "@/store/useChatStore";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface JoinGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
   group: boolean;
+  handleSubmit: (e: React.FormEvent, id: string) => void;
 }
 
 export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
   isOpen,
   onClose,
   group,
+  handleSubmit,
 }) => {
   const [id, setId] = useState("");
-  const { fetchUser } = useChatStore();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const handleSubmit = async (e: React.FormEvent) => {
-    await fetchUser(group, onClose, id, toast, navigate, e);
-  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -49,7 +43,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={(e) => handleSubmit(e, id)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
                   {group ? "Group ID" : "Email address"}

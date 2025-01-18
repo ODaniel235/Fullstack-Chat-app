@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import prisma from "../db/db.js";
 const authMiddleware = async (req, res, next) => {
   try {
-    
     const { RefreshToken, AccessToken } = req.cookies;
     if (!RefreshToken)
       return res
@@ -64,6 +63,7 @@ const authMiddleware = async (req, res, next) => {
           location: true,
           privacySettings: true,
           password: false,
+          groups: true,
         },
       });
       req.user = user;

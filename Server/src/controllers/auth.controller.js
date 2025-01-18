@@ -105,6 +105,9 @@ export const login = async (req, res) => {
 
     const userExists = await prisma.user.findFirst({
       where: { email },
+      include:{
+        groups:true
+      }
     });
 
     if (type == "passwordless") {
@@ -266,6 +269,7 @@ export const updateUser = async (req, res) => {
       },
       include: {
         statuses: true,
+        groups: true,
       },
     });
     let processedUser = {

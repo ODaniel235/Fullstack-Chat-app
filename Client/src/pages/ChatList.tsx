@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 import { JoinGroupModal } from "@/components/groups/JoinGroupModal";
 
 export const ChatList: React.FC = () => {
+  const { fetchUser } = useChatStore();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { chats } = useChatStore();
@@ -45,6 +46,11 @@ export const ChatList: React.FC = () => {
     );
 
     setMappedChats(matchingConversations); // Update state with filtered conversations
+  };
+  const handleSubmit = async (e: React.FormEvent, id: string) => {
+    e.preventDefault();
+    const onClose = () => setShowJoinModal(false);
+    await fetchUser(onClose, id, toast, navigate, e);
   };
 
   return (
@@ -140,6 +146,7 @@ export const ChatList: React.FC = () => {
         <Plus className="w-6 h-6" />
       </motion.button>
       <JoinGroupModal
+        handleSubmit={(e, id: string) => handleSubmit(e, id)}
         group={false}
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}

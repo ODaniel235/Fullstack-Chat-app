@@ -5,12 +5,26 @@ import { Plus, Mic, Video } from "lucide-react";
 import { JoinGroupModal } from "./JoinGroupModal";
 
 import { sampleGroups } from "../../data";
+import useGroupStore from "@/store/useGroupStore";
+import { useToast } from "@/hooks/use-toast";
+import { CreateGroupModal } from "./CreateGroupModal";
 
 export const GroupList: React.FC = () => {
   const navigate = useNavigate();
+  const { handleJoinGroup } = useGroupStore();
+  const { toast } = useToast();
   const [showJoinModal, setShowJoinModal] = React.useState(false);
-
-
+  const handleSubmit = async (e: React.FormEvent, id: string) => {
+    e.preventDefault();
+    console.log(id);
+    await handleJoinGroup(id, toast);
+  };
+  const handleCreate = async (
+    e: React.FormEvent,
+    groupName: string,
+    groupId: string,
+    avatar: string
+  ) => {};
   const renderLastMessage = (message: any) => {
     switch (message.type) {
       case "audio":
@@ -130,10 +144,14 @@ export const GroupList: React.FC = () => {
         <Plus className="w-6 h-6" />
       </motion.button>
 
-      <JoinGroupModal
-        group
+      <CreateGroupModal
+        handleCreate={(e, groupName, groupId, avatar) =>
+          handleCreate(e, groupName, groupId, avatar)
+        }
+        handleSubmit={(e, id) => handleSubmit(e, id)}
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
+        mode="create"
       />
     </div>
   );

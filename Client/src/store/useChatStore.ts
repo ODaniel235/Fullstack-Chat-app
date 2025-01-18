@@ -179,7 +179,6 @@ const useChatStore = create<any>((set, get) => ({
   },
 
   fetchUser: async (
-    group: boolean,
     onClose: Function,
     email: any,
     toast: Function,
@@ -188,8 +187,6 @@ const useChatStore = create<any>((set, get) => ({
   ) => {
     e.preventDefault();
     try {
-      let data;
-      if (!group) {
         const response = await axiosInstance.get(`/auth/?email=${email}`);
         console.log(response);
         if (response.status == 200) {
@@ -209,7 +206,7 @@ const useChatStore = create<any>((set, get) => ({
           set({ userSearch: response.data.user });
           console.log("Search ===>", response.data.user);
           navigate(`/user/${response.data.user.id}`);
-        }
+        
       }
       // TODO: Implement group joining functionality
       onClose();

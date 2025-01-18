@@ -99,6 +99,8 @@ model Groups{
   members         User[]
   messages        Message[]
   admins          String[]
-  viewed          String[]
+  creator         String
   lastMessage     Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }

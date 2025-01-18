@@ -5,6 +5,7 @@ import { AxiosError } from "axios";
 import { io } from "socket.io-client";
 import getBase64Size from "@/utils/sizeInBase";
 import React from "react";
+import useGroupStore from "./useGroupStore";
 const BASE_URL =
   import.meta.env.MODE === "development" ? "http://localhost:8080" : "/";
 const useAuthStore = create<any>((set, get) => ({
@@ -28,6 +29,7 @@ const useAuthStore = create<any>((set, get) => ({
         set({ userData: response.data.data });
         get().connectSocket();
         set({ isCheckingAuth: true });
+
         navigate("/chats");
       }
     } catch (error) {
@@ -61,6 +63,9 @@ const useAuthStore = create<any>((set, get) => ({
       if (response.status == 200 || response.status == 201) {
         set({ userData: response.data.data });
         get().connectSocket();
+        if (response.data.groups && response.data.groups.length > 0) {
+          useGroupStore.getState().setGroup(response.data.groups);
+        }
         set({ isCheckingAuth: true });
 
         navigate("/chats");
