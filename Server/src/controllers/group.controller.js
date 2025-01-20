@@ -74,6 +74,10 @@ export const addToGroup = async (req, res) => {
         data: {
           members: { connect: { id: userId } },
         },
+        include: {
+          members: true,
+          messages: true,
+        },
       }),
       prisma.user.update({
         where: { id: userId },
@@ -96,6 +100,7 @@ export const addToGroup = async (req, res) => {
         },
       }),
     ]);
+    console.log(groupJoined);
 
     // Emit events to the user
     const userSocket = getUserSocket(userId);
@@ -103,6 +108,11 @@ export const addToGroup = async (req, res) => {
       io.to(userSocket).emit("updatedProfile", { newProfile: updatedUser });
       io.to(userSocket).emit("joinedGroup", { group: groupJoined });
     }
+    const sendTousers = groupJoined.members.forEach((member) => {
+      io.to(getUserSocket(member.id)).emit("joinedGroup", {
+        group: groupJoined,
+      });
+    });
 
     res.status(200).json({ message: "Group joined successfully" });
   } catch (err) {
@@ -128,6 +138,60 @@ export const fetchGroup = async (req, res) => {
     });
     if (!allGroups) return res.status(200).json({ groups: [] });
     res.status(200).json({ groups: allGroups });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const leaveGroup = async (req, res) => {
+  try {
+    const { id } = req.query;
+    const userId = req.user.id;
+    if (!id || !userId) {
+      return res
+        .status(400)
+        .json({ error: "Group id and user id are required fields" });
+    }
+    const groupToExit = await prisma.groups.findFirst({
+      where: { id },
+      include: { members: true },
+    });
+    if (!groupToExit) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+    const isMember = groupToExit.members.some((member) => member.id === userId);
+    if (!isMember) {
+      return res.status(400).json({ error: "Not a member of this group" });
+    }
+    const isAdmin = groupToExit.admins.some((admin) => admin === userId);
+    let changeAdmins = groupToExit.admins;
+    if (isAdmin) {
+      changeAdmins = groupToExit.admins.filter((admin) => admin !== userId);
+    }
+    let isCreator = groupToExit.creator === userId;
+    if (isCreator) {
+      await prisma.groups.delete({ where: { id } });
+      return res.status(200).json({ message: "Group deleted successfully" });
+    }
+
+    const group = await prisma.groups.update({
+      where: { id },
+      data: {
+        members: { disconnect: { id: userId } },
+      },
+    });
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        groups: { disconnect: { id } },
+      },
+    });
+    const sendTousers = group.members.forEach((member) => {
+      io.to(getUserSocket(member.id)).emit("joinedGroup", {
+        group: group,
+      });
+    });
+    io.to(getUserSocket(userId)).emit("leftGroup", { group: group });
+    res.status(200).json({ message: "You have left the group" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

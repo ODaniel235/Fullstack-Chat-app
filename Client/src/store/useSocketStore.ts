@@ -64,8 +64,15 @@ const useSocketStore = create<any>((set, get) => ({
       }); */
       socket.on("groupCreated", (data) => {
         console.log("Group creation data receieved===>", data);
-        useGroupStore.get().handleAddGroup(data.groupData);
+        useGroupStore.getState().handleAddGroup(data.groupData);
       });
+      socket.on("joinedGroup", (data) => {
+        console.log(data);
+        useGroupStore.getState().handleAddGroup(data.group);
+      });
+      socket.on("leftGroup",(data)=>{
+        useGroupStore.getState().handleExitGroup(data.group.id)
+      })
     }
   },
 }));

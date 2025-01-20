@@ -81,13 +81,55 @@ const useGroupStore = create<any>((set, get) => ({
   },
   handleAddGroup: (data) => {
     set((state) => {
+      // Check if the group already exists in the state
       const groupExists = state.groups.some((group) => group.id === data.id);
-      if (groupExists) return state; // Return the current state if the group already exists
 
+      if (groupExists) {
+        // If group exists, update it
+        return {
+          groups: state.groups.map((group) =>
+            group.id === data.id ? { ...group, ...data } : group
+          ),
+        };
+      }
+
+      // If the group doesn't exist, add it to the list
       return {
-        groups: [...state.groups, data], // Create a new array with the new group added
+        groups: [...state.groups, data],
       };
     });
   },
+  handleExitGroup: async (id, toast) => {
+    try {
+      const response = await axiosInstance.patch(`/group?id=${id}`);
+      console.log(response);
+      toast({ description: "Left group successfully" });
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+    }
+  },
+  handleExitGroup: (groupId: string) => {
+  set((state) => {
+    return {
+      groups: state.groups.filter((group) => group.id !== groupId),
+    };
+  });
+},
+
 }));
 export default useGroupStore;

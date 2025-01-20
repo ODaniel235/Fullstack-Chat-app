@@ -35,6 +35,7 @@ export const GroupList: React.FC = () => {
 
     await handleCreateGroup(groupName, groupId, toast, avatar);
     setIsModalLoading(false);
+    setShowJoinModal(false);
   };
   const renderLastMessage = (message: any) => {
     switch (message.type) {
