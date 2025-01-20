@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import useAuthStore from "@/store/useAuthStore";
 import { Plus } from "lucide-react";
 import { JoinGroupModal } from "@/components/groups/JoinGroupModal";
+import Avatar from "@/components/shared/Avatar";
 
 export const ChatList: React.FC = () => {
   const { fetchUser } = useChatStore();
@@ -86,17 +87,11 @@ export const ChatList: React.FC = () => {
                   whileHover={{ scale: 1.01 }}
                 >
                   <div className="flex items-center space-x-3">
-                    {otherParticipant?.avatar ? (
-                      <img
-                        src={otherParticipant.avatar}
-                        alt={otherParticipant.name || "User Avatar"}
-                        className="w-12 h-12 rounded-full"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl bg-blue-600">
-                        {otherParticipant?.name?.substring(0, 1)?.toUpperCase()}
-                      </div>
-                    )}
+                    <Avatar
+                      avatar={otherParticipant.avatar}
+                      alt="group"
+                      name={otherParticipant.name}
+                    />
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
                         <h3 className="font-semibold">

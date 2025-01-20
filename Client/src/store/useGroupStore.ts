@@ -1,7 +1,6 @@
 import axiosInstance from "@/utils/axios";
 import { AxiosError } from "axios";
 import { create } from "zustand";
-import useAuthStore from "./useAuthStore";
 interface handleCreateGroup {
   id: string;
   name: string;
@@ -13,7 +12,7 @@ const useGroupStore = create<any>((set, get) => ({
   setGroup: (data) => {
     set({ groups: data });
   },
-  handleCreateGroup: async (id, name, toast, avatar) => {
+  handleCreateGroup: async (name, id, toast, avatar) => {
     try {
       const response = await axiosInstance.post("/group/create", {
         id,
@@ -68,6 +67,27 @@ const useGroupStore = create<any>((set, get) => ({
         });
       }
     }
+  },
+  handleFetchGroup: async () => {
+    try {
+      const res = await axiosInstance.get("/group");
+      console.log(res);
+      if (res.status == 200) {
+        get().setGroup(res.data.groups);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  handleAddGroup: (data) => {
+    set((state) => {
+      const groupExists = state.groups.some((group) => group.id === data.id);
+      if (groupExists) return state; // Return the current state if the group already exists
+
+      return {
+        groups: [...state.groups, data], // Create a new array with the new group added
+      };
+    });
   },
 }));
 export default useGroupStore;

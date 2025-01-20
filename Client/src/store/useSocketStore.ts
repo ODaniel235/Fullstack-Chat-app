@@ -3,6 +3,7 @@ import useAuthStore from "./useAuthStore";
 import useChatStore from "./useChatStore";
 import useStatusStore from "./useStatusStore";
 import useCallStore from "./useCallStore";
+import useGroupStore from "./useGroupStore";
 
 const useSocketStore = create<any>((set, get) => ({
   listenToSocket: () => {
@@ -50,16 +51,20 @@ const useSocketStore = create<any>((set, get) => ({
         console.log(data);
         useChatStore.getState().editUser(data.updatedData);
       });
-      socket.on("incomingSignal", (data: any) => {
+      /*       socket.on("incomingSignal", (data: any) => {
         console.log("Incoming call===>", data);
         useCallStore.getState().setIncomingCall({
           callData: { ...data.callData, signal: data.signal },
           callerData: data.callerData,
           signal: data.signal,
         });
-      });
-      socket.on("answerSignal", (data) => {
+      }); */
+      /*     socket.on("answerSignal", (data) => {
         console.log(data);
+      }); */
+      socket.on("groupCreated", (data) => {
+        console.log("Group creation data receieved===>", data);
+        useGroupStore.get().handleAddGroup(data.groupData);
       });
     }
   },

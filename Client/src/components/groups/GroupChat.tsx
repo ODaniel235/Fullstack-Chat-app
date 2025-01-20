@@ -1,15 +1,17 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { MessageInput } from "../chat/MessageInput";
 import { MessageList } from "../chat/MessageList";
 import { GroupHeader } from "./GroupHeader";
-import { useStore } from "../../store/useStore";
-import { sampleGroups } from "../../data";
+import useGroupStore from "@/store/useGroupStore";
+import GroupChatMessageList from "./GroupMessageList";
+import useAuthStore from "@/store/useAuthStore";
 
 export const GroupChat: React.FC = () => {
   const { groupId } = useParams();
-  const groups = sampleGroups;
+  const { userData } = useAuthStore();
+  const { groups } = useGroupStore();
+  if (!groups || !groupId) return;
   const group = groups.find((g) => g.id === groupId);
 
   if (!group) {
@@ -23,9 +25,13 @@ export const GroupChat: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       <GroupHeader group={group} />
-      <MessageList messages={group.messages} />
+      <GroupChatMessageList
+        messages={group.messages}
+        currentUserId={userData.id}
+      />
       <div className="p-4 border-t bg-white dark:bg-gray-800">
         <MessageInput
+          type="group"
           onSend={(message) => {
             // TODO: Implement group message sending
             console.log("Sending group message:", message);

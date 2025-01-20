@@ -1,43 +1,41 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Message } from "../../types";
-import VideoMessage from "./VideoMessage";
-import AudioMessage from "./AudioMessage";
-import useAuthStore from "@/store/useAuthStore";
-import useChatStore from "@/store/useChatStore";
+import { Message, Chat } from "../../types"; // Assuming `Message` and `Chat` types are already defined
+import VideoMessage from "../chat/VideoMessage";
+import AudioMessage from "../chat/AudioMessage";
 import MessageSkeleton from "../skeletons/MessageSkeleton";
 import formatDate from "@/utils/formatDate";
-import { useLocation } from "react-router-dom";
 
-export const MessageList: React.FC = () => {
-  const { userData } = useAuthStore();
-  const { messages, isMessagesLoading, selectedChat } = useChatStore();
+interface GroupChatMessageListProps {
+  messages: any;
+  currentUserId: string;
+}
+
+const GroupChatMessageList: React.FC<GroupChatMessageListProps> = ({
+  messages,
+
+  currentUserId,
+}) => {
   const [showStartChat, setShowStartChat] = useState(false);
-  const location = useLocation();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const chatLocation = location.pathname.startsWith("/chat");
-    if (!chatLocation) {
-      setShowStartChat(true);
-      return;
-    }
-    if (isMessagesLoading) return;
-    if (messageEndRef.current) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, isMessagesLoading]);
-  useEffect(() => {
-    if (!isMessagesLoading && messages.length === 0) {
+    if (messages.length === 0) {
       const timer = setTimeout(() => {
         setShowStartChat(true);
-      }, 3000); // Show "Start chat" after 3 seconds
+      }, 1000); // Show "Start chat" after 3 seconds
 
       return () => clearTimeout(timer); // Cleanup on unmount or dependency change
     } else {
       setShowStartChat(false); // Reset if messages arrive
     }
-  }, [isMessagesLoading, messages]);
+  }, [messages]);
+
+  useEffect(() => {
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   const renderMessage = (message: Message) => {
     switch (message.type) {
@@ -55,43 +53,45 @@ export const MessageList: React.FC = () => {
     }
   };
 
-  if (isMessagesLoading) return <MessageSkeleton />;
-
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {messages.length > 0
         ? messages.map((message, index) => {
             const isLastMessage = index === messages.length - 1;
+            const isCurrentUser = message.senderId === currentUserId;
+
             return (
               <motion.div
                 key={message.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex ${
-                  message.senderId === userData.id
-                    ? "justify-end"
-                    : "justify-start"
+                  isCurrentUser ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-[70%] rounded-lg p-3 ${
-                    message.senderId === userData.id
+                    isCurrentUser
                       ? "bg-blue-500 text-white"
                       : "bg-gray-100 dark:bg-gray-700"
                   }`}
                 >
+                  {/* Display sender's name if the message is not sent by the current user */}
+                  {!isCurrentUser && (
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                      {message.sender}
+                    </div>
+                  )}
                   {renderMessage(message)}
                   <div className="text-xs mt-1 opacity-70">
                     {formatDate(message.createdAt)}
                   </div>
                   {/* Show "seen" for the last message if it's read */}
-                  {isLastMessage &&
-                    message.isRead &&
-                    message.senderId == userData.id && (
-                      <div className="text-right text-xs text-white mt-1">
-                        Seen
-                      </div>
-                    )}
+                  {isLastMessage && message.isRead && isCurrentUser && (
+                    <div className="text-right text-xs text-white mt-1">
+                      Seen
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );
@@ -106,3 +106,5 @@ export const MessageList: React.FC = () => {
     </div>
   );
 };
+
+export default GroupChatMessageList;

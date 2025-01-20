@@ -63,9 +63,7 @@ const useAuthStore = create<any>((set, get) => ({
       if (response.status == 200 || response.status == 201) {
         set({ userData: response.data.data });
         get().connectSocket();
-        if (response.data.groups && response.data.groups.length > 0) {
-          useGroupStore.getState().setGroup(response.data.groups);
-        }
+        useGroupStore.getState().handleFetchGroup();
         set({ isCheckingAuth: true });
 
         navigate("/chats");
@@ -261,7 +259,9 @@ const useAuthStore = create<any>((set, get) => ({
     try {
       const res = await axiosInstance.get("/auth/check");
       set({ userData: res.data });
+      console.log("Response data===>", res.data);
       get().connectSocket();
+      useGroupStore.getState().handleFetchGroup();
     } catch (error) {
       console.log("Error getting auth", error);
       set({ userData: null });

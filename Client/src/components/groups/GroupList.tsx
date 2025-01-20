@@ -1,31 +1,41 @@
-import React from "react";
-/* Tring to  */
+import React, { useState } from "react";
+/* Resuming tomorrow  */
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Mic, Video } from "lucide-react";
-import { JoinGroupModal } from "./JoinGroupModal";
 
-import { sampleGroups } from "../../data";
 import useGroupStore from "@/store/useGroupStore";
 import { useToast } from "@/hooks/use-toast";
 import { CreateGroupModal } from "./CreateGroupModal";
+import { formatDistanceToNow } from "@/utils/dateUtils";
+import Avatar from "../shared/Avatar";
 
 export const GroupList: React.FC = () => {
   const navigate = useNavigate();
-  const { handleJoinGroup } = useGroupStore();
+  const { groups } = useGroupStore();
+  const [isModalLoading, setIsModalLoading] = useState<boolean>(false);
+  const { handleJoinGroup, handleCreateGroup } = useGroupStore();
   const { toast } = useToast();
   const [showJoinModal, setShowJoinModal] = React.useState(false);
   const handleSubmit = async (e: React.FormEvent, id: string) => {
+    setIsModalLoading(true);
     e.preventDefault();
     console.log(id);
     await handleJoinGroup(id, toast);
+    setIsModalLoading(false);
   };
   const handleCreate = async (
     e: React.FormEvent,
     groupName: string,
     groupId: string,
     avatar: string
-  ) => {};
+  ) => {
+    setIsModalLoading(true);
+    e.preventDefault();
+
+    await handleCreateGroup(groupName, groupId, toast, avatar);
+    setIsModalLoading(false);
+  };
   const renderLastMessage = (message: any) => {
     switch (message.type) {
       case "audio":
@@ -84,9 +94,9 @@ export const GroupList: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {sampleGroups && sampleGroups.length > 0 ? (
+        {groups && groups.length > 0 ? (
           <div className="divide-y dark:divide-gray-700">
-            {sampleGroups.map((group) => (
+            {groups.map((group) => (
               <motion.div
                 key={group.id}
                 onClick={() => navigate(`/groups/${group.id}`)}
@@ -95,10 +105,10 @@ export const GroupList: React.FC = () => {
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <img
-                      src={group.avatar}
-                      alt={group.name}
-                      className="w-12 h-12 rounded-full"
+                    <Avatar
+                      avatar={group.avatar}
+                      alt="group"
+                      name={group.name}
                     />
                     {group.unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -110,16 +120,15 @@ export const GroupList: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold">{group.name}</h3>
                       <span className="text-sm text-gray-500">
-                        {new Date(group.lastActivity).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatDistanceToNow(group?.updatedAt)}
                       </span>
                     </div>
-                    {group.lastMessage && (
+                    {group.lastMessage ? (
                       <div className="text-sm">
                         {renderLastMessage(group.lastMessage)}
                       </div>
+                    ) : (
+                      <div className="text-sm">No message </div>
                     )}
                   </div>
                 </div>
@@ -150,9 +159,9 @@ export const GroupList: React.FC = () => {
           handleCreate(e, groupName, groupId, avatar)
         }
         handleSubmit={(e, id) => handleSubmit(e, id)}
+        isLoading={isModalLoading}
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
-        mode="create"
       />
     </div>
   );

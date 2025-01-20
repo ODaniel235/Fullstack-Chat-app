@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X } from "lucide-react";
+import { Loader, Plus, X } from "lucide-react";
+import useAuthStore from "@/store/useAuthStore";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateGroupModalProps {
   isOpen: boolean;
+  isLoading: boolean;
   onClose: () => void;
   handleSubmit: (e: React.FormEvent, id: string) => void;
   handleCreate: (
@@ -19,14 +22,28 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   onClose,
   handleSubmit,
   handleCreate,
+  isLoading,
 }) => {
   const [groupName, setGroupName] = useState("");
   const [groupId, setGroupId] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [mode, setMode] = useState("join");
-
+  const { handleFileUpload } = useAuthStore();
+  const { toast } = useToast();
   const isCreateMode = mode === "create";
-
+  const handleImageUpdate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    const data = await handleFileUpload(file, toast);
+    setAvatar(data);
+  };
+  const wipeFunc = () => {
+    setGroupId("");
+    setGroupName("");
+    setAvatar(null);
+  };
+  useEffect(() => {
+    wipeFunc();
+  }, [isOpen]);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -127,9 +144,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) =>
-                      setAvatar(e.target.files ? e.target.files[0] : null)
-                    }
+                    onChange={handleImageUpdate}
                     className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                   />
                 </div>
@@ -137,9 +152,19 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                disabled={isLoading}
+                className={`w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors ${
+                  isLoading &&
+                  "brightness-75 cursor-not-allowed flex justify-center items-center"
+                }`}
               >
-                {isCreateMode ? "Create Group" : "Join Group"}
+                {isLoading ? (
+                  <Loader className="animate-spin" />
+                ) : isCreateMode ? (
+                  "Create Group"
+                ) : (
+                  "Join Group"
+                )}{" "}
               </button>
             </form>
           </motion.div>

@@ -6,8 +6,12 @@ import useChatStore from "@/store/useChatStore";
 import { useLocation } from "react-router-dom";
 interface MessageInputProp {
   participantId: any;
+  type?: string;
 }
-export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
+export const MessageInput: React.FC<MessageInputProp> = ({
+  participantId,
+  type,
+}) => {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -33,15 +37,19 @@ export const MessageInput: React.FC<MessageInputProp> = ({ participantId }) => {
       setIsSending(false);
       return;
     }
-
-    await handleMessage(
-      "text",
-      participantId,
-      message,
-      toast,
-      wipeMessage,
-      location.pathname
-    );
+    if (type !== "group") {
+      await handleMessage(
+        "text",
+        participantId,
+        message,
+        toast,
+        wipeMessage,
+        location.pathname
+      );
+    } else {
+      console.log("Sending message to GC");
+    }
+    setIsSending(false);
   };
 
   return (

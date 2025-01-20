@@ -6,6 +6,7 @@ import { ChangePasswordModal } from "../components/modals/ChangePasswordModal";
 import useAuthStore from "@/store/useAuthStore";
 import useThemeStore from "@/store/useThemeStore";
 import { useToast } from "@/hooks/use-toast";
+import Avatar from "@/components/shared/Avatar";
 
 export const Settings: React.FC = () => {
   const { userData, updateData, handleUpdateData } = useAuthStore();
@@ -94,11 +95,11 @@ export const Settings: React.FC = () => {
                 htmlFor="uploadImage"
                 className="relative hover:cursor-pointer"
               >
-                <img
-                  src={userData?.avatar}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800"
-                />{" "}
+                <Avatar
+                  alt="profile"
+                  avatar={userData.avatar}
+                  name={userData.name}
+                />
                 <input
                   onChange={(e) => handleImageUpdate(e, "profile")}
                   type="file"

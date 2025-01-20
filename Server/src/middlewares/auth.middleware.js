@@ -66,6 +66,7 @@ const authMiddleware = async (req, res, next) => {
           groups: true,
         },
       });
+      console.log(user);
       req.user = user;
       next();
     }

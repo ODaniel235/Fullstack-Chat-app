@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { TimeAgo } from "../../utils/dateUtils";
 import { statusView } from "../../types";
 import useStatusStore from "@/store/useStatusStore";
+import Avatar from "../shared/Avatar";
+import useAuthStore from "@/store/useAuthStore";
 
 interface StatusListProps {
   onStatusClick: (status: statusView) => void;
@@ -18,6 +20,7 @@ export const StatusList: React.FC<StatusListProps> = ({
   useEffect(() => {
     console.log("Status changed ===>", otherStatuses);
   }, [otherStatuses]);
+  const { userData } = useAuthStore();
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
       <div className=" overflow-y-hidden">
@@ -74,10 +77,10 @@ export const StatusList: React.FC<StatusListProps> = ({
                 </div>
               ) : (
                 <div className="relative">
-                  <img
-                    src={myStatuses?.profilePicture}
-                    alt="Status"
-                    className="w-16 h-16 rounded-full object-cover"
+                  <Avatar
+                    avatar={myStatuses.profilePicture}
+                    alt="group"
+                    name={userData.name}
                   />
                 </div>
               )}

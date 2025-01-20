@@ -9,6 +9,7 @@ import { VideoRecordingModal } from "./VideoRecordingModal";
 import useChatStore from "@/store/useChatStore";
 import useAuthStore from "@/store/useAuthStore";
 import { useToast } from "@/hooks/use-toast";
+import Avatar from "../shared/Avatar";
 export const ChatWindow: React.FC = () => {
   const { toast } = useToast();
   const { inCall, incomingCall, initiateCall } = useCallStore();
@@ -84,17 +85,16 @@ export const ChatWindow: React.FC = () => {
     <div className="h-full flex flex-col">
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between bg-white dark:bg-gray-800">
-        <div className="flex items-center space-x-3">
-          <img
-            onClick={() => {
-              navigate(`/user/${participantData?.id}`);
-            }}
-            src={
-              participantData?.avatar ||
-              "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg"
-            }
-            alt="Contact"
-            className="w-10 h-10 rounded-full hover:cursor-pointer"
+        <div
+          onClick={() => {
+            navigate(`/user/${participantData?.id}`);
+          }}
+          className="flex items-center space-x-3"
+        >
+          <Avatar
+            avatar={participantData.avatar}
+            alt="contact"
+            name={participantData.name}
           />
           <div>
             <h2 className="font-semibold">{participantData?.name}</h2>

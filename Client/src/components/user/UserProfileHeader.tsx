@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, Phone, Video } from "lucide-react";
+import Avatar from "../shared/Avatar";
 
 interface UserProfileHeaderProps {
   user: {
@@ -24,16 +25,13 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     <div className="relative">
       <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-500" />
       <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end">
-        <motion.img
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          src={
-            user.avatar ||
-            "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg"
-          }
-          alt={user.name}
-          className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800"
-        />
+        >
+          <Avatar avatar={user.avatar} alt="user" name={user.name} />
+        </motion.div>
+
         <div className="ml-6 flex-1">
           <h1 className="text-2xl font-bold text-white">{user.name}</h1>
           <span

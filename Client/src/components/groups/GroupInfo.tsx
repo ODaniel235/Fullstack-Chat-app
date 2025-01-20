@@ -2,13 +2,16 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { useStore } from "../../store/useStore";
-import { sampleGroups } from "../../data";
+import useGroupStore from "@/store/useGroupStore";
+import Avatar from "../shared/Avatar";
 
 export const GroupInfo: React.FC = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const groups = sampleGroups;
+  const { groups } = useGroupStore();
+  if (!groups || !groupId) {
+    return;
+  }
   const group = groups.find((g) => g.id === groupId);
   if (!group) {
     return (
@@ -17,6 +20,7 @@ export const GroupInfo: React.FC = () => {
       </div>
     );
   }
+  console.log(group.members);
 
   return (
     <div className="h-full bg-gray-50 dark:bg-gray-900 overflow-auto">
@@ -38,11 +42,7 @@ export const GroupInfo: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
           <div className="p-6">
             <div className="flex items-center space-x-4 mb-6">
-              <img
-                src={group.avatar}
-                alt={group.name}
-                className="w-20 h-20 rounded-full"
-              />
+              <Avatar avatar={group.avatar} alt="group" name={group.name} />
               <div>
                 <h2 className="text-2xl font-bold">{group.name}</h2>
                 <p className="text-gray-500">{group.members.length} members</p>
@@ -68,7 +68,11 @@ export const GroupInfo: React.FC = () => {
                     <div className="flex-1">
                       <p className="font-medium">{member.name}</p>
                       <p className="text-sm text-gray-500">
-                        {group.admins.includes(member.id) ? "Admin" : "Member"}
+                        {group.creator === member.id
+                          ? "Creator"
+                          : group.admins.includes(member.id)
+                          ? "Admin"
+                          : "Member"}
                       </p>
                     </div>
                     <span
