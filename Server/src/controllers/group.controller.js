@@ -143,8 +143,11 @@ export const fetchGroup = async (req, res) => {
   }
 };
 export const leaveGroup = async (req, res) => {
+  console.log(req.body);
   try {
-    const { id } = req.query;
+    console.log(req.params);
+    const id = req.params.groupId;
+    if (!id) return res.status(400).json({ error: "Group id is required" });
     const userId = req.user.id;
     if (!id || !userId) {
       return res
@@ -169,7 +172,15 @@ export const leaveGroup = async (req, res) => {
     }
     let isCreator = groupToExit.creator === userId;
     if (isCreator) {
+      const group = await prisma.groups.findFirst({
+        where: { id },
+        include: { members: true },
+      });
       await prisma.groups.delete({ where: { id } });
+
+      await group.members.forEach((member) => {
+        io.to(getUserSocket(member.id)).emit("exitGroup", { group: group });
+      });
       return res.status(200).json({ message: "Group deleted successfully" });
     }
 
@@ -178,6 +189,10 @@ export const leaveGroup = async (req, res) => {
       data: {
         members: { disconnect: { id: userId } },
       },
+      include: {
+        members: true,
+        messages: true,
+      },
     });
     await prisma.user.update({
       where: { id: userId },
@@ -185,13 +200,56 @@ export const leaveGroup = async (req, res) => {
         groups: { disconnect: { id } },
       },
     });
-    const sendTousers = group.members.forEach((member) => {
-      io.to(getUserSocket(member.id)).emit("joinedGroup", {
-        group: group,
-      });
+    await group.members.forEach((member) => {
+      io.to(getUserSocket(member.id)).emit("leftGroup", { group: group });
     });
-    io.to(getUserSocket(userId)).emit("leftGroup", { group: group });
+
+    io.to(getUserSocket(userId)).emit("exitGroup", { group: group });
     res.status(200).json({ message: "You have left the group" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const sendMessageFunction = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { groupId,  content } = req.body;
+    if (!groupId || !content)
+      return res.status(400).json({
+        error: "groupId and message content are required fields",
+      });
+    let contentLink = content;
+    if (type !== "text") {
+      const link = await uploadBase64(content, `${type}s`);
+      contentLink = link;
+    }
+    const newMessage = await prisma.groupMessage.create({
+      data: {
+        groupId,
+
+        content,
+        isRead: [userId],
+      },
+    });
+    console.log("Created message", newMessage);
+    const group = await prisma.groups.update({
+      where: { id: groupId },
+      data: {
+        messages: {
+          connect: {
+            id: newMessage.id,
+          },
+        },
+      },
+      include: {
+        members: true,
+        messages: true,
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "Message sent successfully", group });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -23,6 +23,7 @@ export const GroupList: React.FC = () => {
     console.log(id);
     await handleJoinGroup(id, toast);
     setIsModalLoading(false);
+    setShowJoinModal(false);
   };
   const handleCreate = async (
     e: React.FormEvent,

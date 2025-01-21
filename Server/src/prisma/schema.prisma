@@ -59,10 +59,8 @@ model Message{
   id         String        @id     @default(cuid())
   senderId          String
   conversationId    String
-  groupId           String?   
   conversation      Conversation    @relation(fields:[conversationId], references:[id])
   sender            User            @relation(fields:[senderId], references:[id])
-  group             Groups?      @relation(fields:[groupId], references:[id])
   type              MessageType
   content           String
   isRead            Boolean         @default(false)
@@ -97,10 +95,17 @@ model Groups{
   name            String
   avatar          String?
   members         User[]
-  messages        Message[]
+  messages        GroupMessage[]
   admins          String[]
   creator         String
   lastMessage     Json?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+}
+model GroupMessage{
+  id      String @id     @default(cuid())
+  groupId      String
+  content     String
+  isRead      String[]
+  group       Groups      @relation(fields:[groupId], references:[id])
 }

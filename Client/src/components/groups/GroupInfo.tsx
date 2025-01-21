@@ -10,7 +10,7 @@ export const GroupInfo: React.FC = () => {
   const { groupId } = useParams();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { groups, handleLeaveGroup } = useGroupStore(); // Assume you have a `leaveGroup` function in your store
+  const { groups, handleExitGroup } = useGroupStore(); // Assume you have a `leaveGroup` function in your store
   if (!groups || !groupId) {
     return;
   }
@@ -24,9 +24,9 @@ export const GroupInfo: React.FC = () => {
   }
 
   // Handle group exit
-  const handleExitGroup = async () => {
+  const handleLeaveGroup = async () => {
     // Assuming `leaveGroup` handles the exit functionality, including API calls or socket events.
-    await handleLeaveGroup(groupId, toast);
+    await handleExitGroup(groupId, toast);
     navigate("/groups"); // Navigate to groups list after exiting
   };
 
@@ -79,7 +79,7 @@ export const GroupInfo: React.FC = () => {
             {/* Exit Button */}
             <div className="flex justify-end">
               <button
-                onClick={handleExitGroup}
+                onClick={handleLeaveGroup}
                 className="inline-flex items-center text-sm text-red-500 hover:text-red-700"
               >
                 <LogOut className="w-5 h-5 mr-2" />

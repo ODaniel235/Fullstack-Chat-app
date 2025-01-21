@@ -71,7 +71,7 @@ const useGroupStore = create<any>((set, get) => ({
   handleFetchGroup: async () => {
     try {
       const res = await axiosInstance.get("/group");
-      console.log(res);
+
       if (res.status == 200) {
         get().setGroup(res.data.groups);
       }
@@ -101,11 +101,11 @@ const useGroupStore = create<any>((set, get) => ({
   },
   handleExitGroup: async (id, toast) => {
     try {
-      const response = await axiosInstance.patch(`/group?id=${id}`);
+      const response = await axiosInstance.put(`/group/${id}/leave`);
       console.log(response);
-      toast({ description: "Left group successfully" });
+      toast({ description: response.data.message });
     } catch (error) {
-      console.log(error);
+      console.log("Errorr===>>", error);
       if (error instanceof AxiosError) {
         const err =
           error?.response?.data?.error || "An error occoured, please try again";
@@ -123,13 +123,35 @@ const useGroupStore = create<any>((set, get) => ({
       }
     }
   },
-  handleExitGroup: (groupId: string) => {
-  set((state) => {
-    return {
-      groups: state.groups.filter((group) => group.id !== groupId),
-    };
-  });
-},
-
+  handleLeaveGroup: (groupId: string) => {
+    console.log(groupId);
+    set((state) => {
+      return {
+        groups: state.groups.filter((group) => group.id !== groupId),
+      };
+    });
+  },
+  handleSendMessage: async(groupId, content,toast)=>{
+    try {
+      
+    } catch (error) {
+      console.log("Errorr===>>", error);
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+    }
+  },
 }));
 export default useGroupStore;

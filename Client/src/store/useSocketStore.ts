@@ -70,9 +70,14 @@ const useSocketStore = create<any>((set, get) => ({
         console.log(data);
         useGroupStore.getState().handleAddGroup(data.group);
       });
-      socket.on("leftGroup",(data)=>{
-        useGroupStore.getState().handleExitGroup(data.group.id)
-      })
+      socket.on("leftGroup", (data) => {
+        console.log(data);
+        useGroupStore.getState().handleAddGroup(data.group);
+      });
+      socket.on("exitGroup", (data) => {
+        console.log("Exit data====>", data.group);
+        useGroupStore.getState().handleLeaveGroup(data.group.id);
+      });
     }
   },
 }));
