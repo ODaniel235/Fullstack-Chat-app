@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { Loader, X } from "lucide-react";
 
 interface OTPModalProps {
   isOpen: boolean;
   onClose: () => void;
   action: "password" | "twoFactor" | "delete" | null;
   handleSubmit: Function;
+  otpVerifying: boolean;
 }
 
 export const OTPModal: React.FC<OTPModalProps> = ({
@@ -14,6 +15,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
   onClose,
   action,
   handleSubmit,
+  otpVerifying,
 }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
@@ -23,10 +25,16 @@ export const OTPModal: React.FC<OTPModalProps> = ({
       newOtp[index] = value;
       setOtp(newOtp);
 
-      // Auto-focus next input
+      // Auto-focus next input on input
       if (value && index < 5) {
         const nextInput = document.getElementById(`otp-${index + 1}`);
         nextInput?.focus();
+      }
+
+      // Auto-focus previous input on delete
+      if (!value && index > 0) {
+        const prevInput = document.getElementById(`otp-${index - 1}`);
+        prevInput?.focus();
       }
     }
   };
@@ -89,9 +97,13 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 
             <button
               onClick={() => handleSubmit(onClose, otp)}
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors flex justify-center items-center"
             >
-              Verify
+              {otpVerifying ? (
+                <Loader className=" animate-spin w-4 h-4" />
+              ) : (
+                "Verify"
+              )}
             </button>
           </motion.div>
         </motion.div>

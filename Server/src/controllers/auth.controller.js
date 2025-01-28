@@ -270,7 +270,6 @@ export const updateUser = async (req, res) => {
       },
       include: {
         statuses: true,
-        groups: true,
       },
     });
     let processedUser = {

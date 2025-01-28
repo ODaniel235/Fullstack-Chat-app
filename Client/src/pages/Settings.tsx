@@ -13,9 +13,12 @@ export const Settings: React.FC = () => {
     useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const { toast } = useToast();
 
   const { changeThemes, theme } = useThemeStore();
+  const [otpVerifying, setOtpVerifying] = useState(false);
   const [basics, setBasics] = useState({
     firstName: "",
     lastName: "",
@@ -24,7 +27,6 @@ export const Settings: React.FC = () => {
   const [otpAction, setOtpAction] = useState<
     "password" | "twoFactor" | "delete" | null
   >(null);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
   const handleOTPAction = async (
     action: "password" | "twoFactor" | "delete"
@@ -37,9 +39,10 @@ export const Settings: React.FC = () => {
   const handleOTPVerified = () => {
     setShowOTPModal(false);
     if (otpAction === "password") {
+      setShowOTPModal(false);
       setShowPasswordModal(true);
-    } else if (otpAction === "twoFactor") {
-      setTwoFactorEnabled(!twoFactorEnabled);
+    } else {
+      console.log("OTP verified for this");
     }
   };
   const handleImageUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,10 +76,14 @@ export const Settings: React.FC = () => {
     await updateData({ [value]: data }, toast);
   };
   const handleSubmit = async (onclose, otp) => {
+    setOtpVerifying(true);
     const newOtp = parseInt(otp.join(""), 10);
     console.log(newOtp);
-    const verifiedOtp = await verifyOtp(newOtp, "password", toast);
-    console.log(verifiedOtp);
+    const verifiedOtp = await verifyOtp(newOtp, otpAction, toast);
+    setOtpVerifying(false);
+    if (verifiedOtp) {
+      handleOTPVerified();
+    }
   };
   return (
     <motion.div
@@ -279,24 +286,7 @@ export const Settings: React.FC = () => {
           >
             Change Password
           </button>
-          <div className="flex items-center justify-between px-4 py-2">
-            <span>Two-Step Verification</span>
-            {userData?.twoFactorEnabled ? (
-              <button
-                onClick={() => handleOTPAction("twoFactor")}
-                className="text-red-500 hover:text-red-600"
-              >
-                Turn Off
-              </button>
-            ) : (
-              <button
-                onClick={() => handleOTPAction("twoFactor")}
-                className="text-blue-500 hover:text-blue-600"
-              >
-                Turn On
-              </button>
-            )}
-          </div>
+
           <button
             onClick={() => handleOTPAction("delete")}
             className="w-full text-left px-4 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -308,6 +298,7 @@ export const Settings: React.FC = () => {
 
       {showOTPModal && (
         <OTPModal
+          otpVerifying={otpVerifying}
           isOpen={showOTPModal}
           onClose={() => setShowOTPModal(false)}
           handleSubmit={(onClose: Function, otp: string | number) =>
