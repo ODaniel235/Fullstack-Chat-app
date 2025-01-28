@@ -131,9 +131,12 @@ const useGroupStore = create<any>((set, get) => ({
       };
     });
   },
-  handleSendMessage: async(groupId, content,toast)=>{
+  handleSendMessage: async (groupId, content, toast) => {
     try {
-      
+      const response = await axiosInstance.post(`/group/new`, {
+        groupId,
+        content,
+      });
     } catch (error) {
       console.log("Errorr===>>", error);
       if (error instanceof AxiosError) {

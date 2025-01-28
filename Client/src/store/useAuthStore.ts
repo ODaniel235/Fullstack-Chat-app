@@ -282,7 +282,62 @@ const useAuthStore = create<any>((set, get) => ({
       return allErrors;
     }
   },
+  requestOtp: async (type: string, toast: Function) => {
+    try {
+      const response = await axiosInstance.post("/auth/otp", { type });
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+    }
+  },
 
+  verifyOtp: async (otp: string | number, type: string, toast: Function) => {
+    try {
+      const response = await axiosInstance.post("/auth/otp/verify", {
+        otp,
+        type,
+      });
+      console.log(response);
+      if (response.status == 200) {
+        console.log("OTP verified");
+        return true;
+      }
+    } catch (error) {
+      console.log(error);
+
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+      return false;
+    }
+  },
   connectSocket: () => {
     const { userData } = get();
     if (!userData || get().socket?.connected) return;

@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import Avatar from "@/components/shared/Avatar";
 
 export const Settings: React.FC = () => {
-  const { userData, updateData, handleUpdateData } = useAuthStore();
+  const { userData, updateData, handleUpdateData, requestOtp, verifyOtp } =
+    useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { toast } = useToast();
@@ -25,9 +26,12 @@ export const Settings: React.FC = () => {
   >(null);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
-  const handleOTPAction = (action: "password" | "twoFactor" | "delete") => {
+  const handleOTPAction = async (
+    action: "password" | "twoFactor" | "delete"
+  ) => {
     setOtpAction(action);
     setShowOTPModal(true);
+    await requestOtp(action, toast);
   };
 
   const handleOTPVerified = () => {
@@ -68,6 +72,12 @@ export const Settings: React.FC = () => {
     }
     await updateData({ [value]: data }, toast);
   };
+  const handleSubmit = async (onclose, otp) => {
+    const newOtp = parseInt(otp.join(""), 10);
+    console.log(newOtp);
+    const verifiedOtp = await verifyOtp(newOtp, "password", toast);
+    console.log(verifiedOtp);
+  };
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -101,7 +111,7 @@ export const Settings: React.FC = () => {
                   name={userData.name}
                 />
                 <input
-                  onChange={(e) => handleImageUpdate(e, "profile")}
+                  onChange={(e) => handleImageUpdate(e)}
                   type="file"
                   accept="image/*"
                   id="uploadImage"
@@ -300,6 +310,9 @@ export const Settings: React.FC = () => {
         <OTPModal
           isOpen={showOTPModal}
           onClose={() => setShowOTPModal(false)}
+          handleSubmit={(onClose: Function, otp: string | number) =>
+            handleSubmit(onClose, otp)
+          }
           action={otpAction} /* 
           onVerified={handleOTPVerified} */
         />

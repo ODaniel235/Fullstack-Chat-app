@@ -27,4 +27,13 @@ const signToken = async (id, email, res) => {
   });
   return { refreshToken, accessToken };
 };
-export { signToken };
+const generateNumbers = (number) => {
+  let otp = [];
+  for (let i = 0; i < number; i++) {
+    otp.push(Math.floor(Math.random() * 10));
+    console.log(otp);
+  }
+  console.log(otp);
+  return otp;
+};
+export { signToken, generateNumbers };

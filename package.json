@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "main": "Server/server.js",
   "scripts": {
-    "dev": "pnpm --prefix Server run dev"
-  },
+  "backend": "pnpm --prefix Server run dev",
+  "frontend": "pnpm --prefix Client run dev",
+  "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\""
+},
   "author": "Omole Oluwadamilare Daniel",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "concurrently": "^9.1.2"
   }
 }

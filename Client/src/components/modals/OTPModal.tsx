@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 
 interface OTPModalProps {
   isOpen: boolean;
   onClose: () => void;
-  action: 'password' | 'twoFactor' | 'delete' | null;
+  action: "password" | "twoFactor" | "delete" | null;
+  handleSubmit: Function;
 }
 
-export const OTPModal: React.FC<OTPModalProps> = ({ isOpen, onClose, action }) => {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+export const OTPModal: React.FC<OTPModalProps> = ({
+  isOpen,
+  onClose,
+  action,
+  handleSubmit,
+}) => {
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
   const handleChange = (index: number, value: string) => {
     if (value.length <= 1) {
@@ -25,23 +31,16 @@ export const OTPModal: React.FC<OTPModalProps> = ({ isOpen, onClose, action }) =
     }
   };
 
-  const handleSubmit = () => {
-    const otpValue = otp.join('');
-    console.log('OTP Submitted:', otpValue);
-    // TODO: Implement OTP verification
-    onClose();
-  };
-
   const getActionTitle = () => {
     switch (action) {
-      case 'password':
-        return 'Change Password';
-      case 'twoFactor':
-        return 'Two-Step Verification';
-      case 'delete':
-        return 'Delete Account';
+      case "password":
+        return "Change Password";
+      case "twoFactor":
+        return "Two-Step Verification";
+      case "delete":
+        return "Delete Account";
       default:
-        return 'Verify OTP';
+        return "Verify OTP";
     }
   };
 
@@ -89,7 +88,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({ isOpen, onClose, action }) =
             </div>
 
             <button
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(onClose, otp)}
               className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
             >
               Verify

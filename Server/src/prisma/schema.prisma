@@ -38,6 +38,7 @@ model User{
   blockedUsers      String[]
   conversations     Conversation[]
   messages          Message[]
+  GroupMessage      GroupMessage[]
   groups            Groups[]
 }
 model Conversation {
@@ -106,6 +107,16 @@ model GroupMessage{
   id      String @id     @default(cuid())
   groupId      String
   content     String
+  senderId    String
   isRead      String[]
+  sender      User        @relation(fields:[senderId], references:[id])
   group       Groups      @relation(fields:[groupId], references:[id])
+}
+model Otp{
+  id          String   @id   @default(cuid())
+  userId       String   
+  otp         Int
+  type        String
+  createdAt   DateTime        @default(now())
+  expiresAt DateTime
 }

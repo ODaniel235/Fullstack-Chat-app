@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import prisma from "../db/db.js";
-import { signToken } from "../utils/utils.js";
+import { generateNumbers, signToken } from "../utils/utils.js";
 import uploadBase64 from "../utils/cloudinary.js";
 import { getUserSocket, io } from "../socket/socket.js";
+import sendOTPByEmail from "../utils/sendMail.js";
 export const signup = async (req, res) => {
   const { firstname, lastname, email, password, type, avatar, location } =
     req.body;
@@ -105,9 +106,9 @@ export const login = async (req, res) => {
 
     const userExists = await prisma.user.findFirst({
       where: { email },
-      include:{
-        groups:true
-      }
+      include: {
+        groups: true,
+      },
     });
 
     if (type == "passwordless") {
@@ -347,6 +348,94 @@ export const getUser = async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.status(200).json({ user: processedUser });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const requestOtp = async (req, res) => {
+  try {
+    const { type } = req.body;
+    const { email, name } = req.user;
+    const userId = req.user.id;
+
+    if (!type) {
+      return res
+        .status(400)
+        .json({ error: "Type and email are required fields" });
+    }
+
+    // Check if OTP exists for this user and type, and if it has expired
+    const otpExists = await prisma.otp.findFirst({
+      where: { userId, type },
+      orderBy: { createdAt: "desc" }, // Get the most recent OTP for this type
+    });
+
+    const now = new Date();
+    const OTP_LIFESPAN = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+    if (otpExists) {
+      // If OTP exists and hasn't expired, delete the old one
+      await prisma.otp.delete({ where: { id: otpExists.id } });
+    }
+
+    const otp = generateNumbers(6);
+    const otpNum = parseInt(otp.join(""), 10);
+
+    const newOtp = await prisma.otp.create({
+      data: {
+        userId,
+        otp: otpNum,
+        type,
+        expiresAt: new Date(now.getTime() + OTP_LIFESPAN),
+      },
+    });
+
+    await sendOTPByEmail(email, name, otp);
+
+    res.status(200).json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+export const verifyOtp = async (req, res) => {
+  try {
+    const { otp, type } = req.body;
+    const userId = req.user.id;
+    if (!otp || !type) {
+      return res
+        .status(400)
+        .json({ error: "OTP and Type are required fields" });
+    }
+
+    // Fetch OTP data for the user and type, ordered by the most recent one
+    const otpData = await prisma.otp.findFirst({
+      where: { userId, type },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!otpData) {
+      return res.status(400).json({ error: "Invalid OTP request" });
+    }
+
+    // Check if the OTP has expired
+    const now = new Date();
+    if (now > new Date(otpData.expiresAt)) {
+      await prisma.otp.delete({ where: { id: otpData.id } });
+      return res.status(401).json({ error: "OTP has expired" });
+    }
+
+    // Compare the OTPs
+    if (parseInt(otpData.otp, 10) !== parseInt(otp, 10)) {
+      return res.status(401).json({ error: "Invalid OTP" });
+    }
+
+    // If OTP is valid, delete the OTP record and return success
+    await prisma.otp.delete({ where: { id: otpData.id } });
+
+    res.status(200).json({ message: "OTP verified successfully" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

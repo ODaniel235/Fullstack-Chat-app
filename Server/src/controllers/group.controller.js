@@ -133,7 +133,11 @@ export const fetchGroup = async (req, res) => {
       },
       include: {
         members: true,
-        messages: true,
+        messages: {
+          include: {
+            sender: true,
+          },
+        },
       },
     });
     if (!allGroups) return res.status(200).json({ groups: [] });
@@ -214,20 +218,19 @@ export const leaveGroup = async (req, res) => {
 export const sendMessageFunction = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { groupId,  content } = req.body;
+    const { groupId, content } = req.body;
     if (!groupId || !content)
       return res.status(400).json({
         error: "groupId and message content are required fields",
       });
-    let contentLink = content;
-    if (type !== "text") {
-      const link = await uploadBase64(content, `${type}s`);
-      contentLink = link;
-    }
     const newMessage = await prisma.groupMessage.create({
       data: {
         groupId,
-
+        sender: {
+          connect: {
+            id: userId,
+          },
+        },
         content,
         isRead: [userId],
       },
@@ -243,9 +246,16 @@ export const sendMessageFunction = async (req, res) => {
         },
       },
       include: {
+        messages: {
+          include: {
+            sender: true,
+          },
+        },
         members: true,
-        messages: true,
       },
+    });
+    const allUsers = group.members.forEach((member) => {
+      io.to(getUserSocket(member.id)).emit("newGroupMessage", { group });
     });
     return res
       .status(201)
