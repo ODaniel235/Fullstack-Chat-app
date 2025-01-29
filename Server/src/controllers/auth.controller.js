@@ -5,7 +5,7 @@ import uploadBase64 from "../utils/cloudinary.js";
 import { getUserSocket, io } from "../socket/socket.js";
 import sendOTPByEmail from "../utils/sendMail.js";
 export const signup = async (req, res) => {
-  const { firstname, lastname, email, password, type } =
+ const { firstname, lastname, email, password, type, avatar, location } =
     req.body;
   try {
     // Validate required fields
