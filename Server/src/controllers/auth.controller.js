@@ -4,6 +4,7 @@ import { generateNumbers, signToken } from "../utils/utils.js";
 import uploadBase64 from "../utils/cloudinary.js";
 import { getUserSocket, io } from "../socket/socket.js";
 import sendOTPByEmail from "../utils/sendMail.js";
+import { disconnect } from "mongoose";
 export const signup = async (req, res) => {
   const { firstname, lastname, email, password, type, avatar, location } =
     req.body;
@@ -31,7 +32,7 @@ export const signup = async (req, res) => {
             name: `${firstname} ${lastname}`,
             avatar:
               avatar ||
-              "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
+             
             email,
             theme: "system",
             status: "online",
@@ -55,8 +56,7 @@ export const signup = async (req, res) => {
       newUser = await prisma.user.create({
         data: {
           name: `${firstname} ${lastname}`,
-          avatar:
-            "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
+
           email,
           theme: "system",
           status: "online",
@@ -75,7 +75,7 @@ export const signup = async (req, res) => {
       data: {
         poster: newUser.name,
         userId: newUser.id,
-        profilePicture: newUser.avatar,
+        profilePicture: newUser?.avatar,
       },
     });
     // Generate JWT token after successful signup
@@ -110,7 +110,6 @@ export const login = async (req, res) => {
         groups: true,
       },
     });
-
     if (type == "passwordless") {
       // If the user does not exist, create a new user
       if (!userExists) {
@@ -435,6 +434,81 @@ export const verifyOtp = async (req, res) => {
     res.status(200).json({ message: "OTP verified successfully" });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log("Deleting account with user ID:", userId);
+    await prisma.$transaction(async (prisma) => {
+      // Delete statuses
+      await prisma.statusData.deleteMany({ where: { userId } });
+      await prisma.status.deleteMany({ where: { userId } });
+
+      // Delete messages
+      await prisma.message.deleteMany({ where: { senderId: userId } });
+      await prisma.groupMessage.deleteMany({ where: { senderId: userId } });
+
+      // Delete conversations where user is a participant
+      await prisma.conversation.deleteMany({
+        where: {
+          participantIds: {
+            hasSome: [userId],
+          },
+        },
+      });
+      // Remove user from group admins
+      const groupsWithUserAsAdmin = await prisma.groups.findMany({
+        where: { admins: { has: userId } },
+        select: { id: true, admins: true },
+      });
+
+      for (const group of groupsWithUserAsAdmin) {
+        await prisma.groups.update({
+          where: { id: group.id },
+          data: {
+            admins: {
+              set: group.admins.filter((id) => id !== userId),
+            },
+          },
+        });
+      }
+      const groupWithMembers = await prisma.groups.findMany({
+        where: { members: { some: { id: userId } } },
+      });
+      // Remove user from group members
+      /*  await prisma.groups.updateMany({
+        where: { members: { some: { id: userId } } },
+        data: {
+          members,
+        },
+      });
+ */
+      groupWithMembers.forEach(async (group) => {
+        await prisma.groups.update({
+          where: { id: group.id },
+          data: {
+            members: {
+              disconnect: {
+                id: userId,
+              },
+            },
+          },
+        });
+      });
+      // Delete groups created by the user
+      await prisma.groups.deleteMany({ where: { creator: userId } });
+
+      // Delete OTPs linked to the user
+      await prisma.otp.deleteMany({ where: { userId } });
+
+      // Delete user account
+      await prisma.user.delete({ where: { id: userId } });
+    });
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
