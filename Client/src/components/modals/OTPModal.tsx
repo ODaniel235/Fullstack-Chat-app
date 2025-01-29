@@ -86,7 +86,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                 <input
                   key={index}
                   id={`otp-${index}`}
-                  type="text"
+                  type="number"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
