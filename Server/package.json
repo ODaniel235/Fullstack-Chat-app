@@ -7,7 +7,7 @@
   "author": "Omole Oluwadamilare Daniel",
   "scripts": {
     "test": "jest",
-    "start": "prisma generate && nodemon server.js"
+    "start": "prisma generate --schema=src/prisma/schema.prisma && nodemon server.js"
   },
   "keywords": [],
   "license": "ISC",
