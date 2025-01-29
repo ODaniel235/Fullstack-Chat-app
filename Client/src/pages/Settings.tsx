@@ -7,16 +7,24 @@ import useAuthStore from "@/store/useAuthStore";
 import useThemeStore from "@/store/useThemeStore";
 import { useToast } from "@/hooks/use-toast";
 import Avatar from "@/components/shared/Avatar";
+import DeleteAccountModal from "@/components/modals/DeleteAccountModal";
+import { useNavigate } from "react-router-dom";
 
 export const Settings: React.FC = () => {
-  const { userData, updateData, handleUpdateData, requestOtp, verifyOtp } =
-    useAuthStore();
+  const {
+    userData,
+    updateData,
+    handleUpdateData,
+    requestOtp,
+    verifyOtp,
+    deleteAccount,
+  } = useAuthStore();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const { toast } = useToast();
-
+  const navigate = useNavigate();
   const { changeThemes, theme } = useThemeStore();
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [basics, setBasics] = useState({
@@ -42,7 +50,7 @@ export const Settings: React.FC = () => {
       setShowOTPModal(false);
       setShowPasswordModal(true);
     } else {
-      console.log("OTP verified for this");
+      setDeleteAccountModal(true);
     }
   };
   const handleImageUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,6 +92,12 @@ export const Settings: React.FC = () => {
     if (verifiedOtp) {
       handleOTPVerified();
     }
+  };
+  const handleAccountDelete = async () => {
+    setIsDeletingAccount(true);
+    await deleteAccount(navigate, toast);
+    setIsDeletingAccount(false);
+    setDeleteAccountModal(false);
   };
   return (
     <motion.div
@@ -313,6 +327,14 @@ export const Settings: React.FC = () => {
         <ChangePasswordModal
           isOpen={showPasswordModal}
           onClose={() => setShowPasswordModal(false)}
+        />
+      )}
+      {deleteAccountModal && (
+        <DeleteAccountModal
+          handleDelete={handleAccountDelete}
+          isOpen={deleteAccountModal}
+          onClose={() => setDeleteAccountModal(false)}
+          isDeleting={isDeletingAccount}
         />
       )}
     </motion.div>

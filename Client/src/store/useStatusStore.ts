@@ -73,23 +73,6 @@ const useStatusStore = create<any>((set, get) => ({
       console.log(response);
     } catch (error) {
       console.log(error);
-      if (error instanceof AxiosError) {
-        const err =
-          error?.response?.data?.error || "An error occoured, please try again";
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: err,
-        });
-        return err;
-      } else {
-        console.log(error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "An error occoured",
-        });
-      }
     }
   },
   createStatus: async (

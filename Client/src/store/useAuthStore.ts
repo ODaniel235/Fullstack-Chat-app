@@ -18,6 +18,15 @@ const useAuthStore = create<any>((set, get) => ({
   setUser: (data) => {
     set({ userData: data });
   },
+  resetState: () => {
+    const initialStates = get();
+    console.log("Initial States===>", initialStates);
+    Object.keys(initialStates).forEach((key) => {
+      if (typeof initialStates[key as keyof any] !== "function") {
+        set({ [key]: null });
+      }
+    });
+  },
 
   signup: async (data: any, navigate: Function, toast: Function) => {
     try {
@@ -338,10 +347,37 @@ const useAuthStore = create<any>((set, get) => ({
       return false;
     }
   },
+  deleteAccount: async (navigate: Function, toast: Function) => {
+    try {
+      const response = await axiosInstance.delete("/auth/user");
+      if (response.status == 200) {
+        navigate("/signin");
+        get().resetState();
+      }
+    } catch (error) {
+      console.log(error);
+
+      if (error instanceof AxiosError) {
+        const err =
+          error?.response?.data?.error || "An error occoured, please try again";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occoured",
+        });
+      }
+    }
+  },
   connectSocket: () => {
     const { userData } = get();
     if (!userData || get().socket?.connected) return;
-    const socket = io("http://localhost:8080", {
+    const socket = io(BASE_URL, {
       query: {
         userId: userData.id,
       },

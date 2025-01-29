@@ -1,33 +1,21 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
-import useAuthStore from "@/store/useAuthStore";
+import { Loader, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isDeleting: boolean;
+  handleDelete: () => void;
 }
 
-export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
+const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   isOpen,
   onClose,
+  isDeleting,
+  handleDelete,
 }) => {
-  const { deleteAccount } = useAuthStore(); // You would need to implement this in your store
-  const { toast } = useToast();
-
-  const handleDelete = async () => {
-    try {
-      await deleteAccount(); // Assume this deletes the account
-      toast({ description: "Account deleted successfully" });
-      onClose(); // Close the modal after successful deletion
-    } catch (error) {
-      toast({
-        description: "Error deleting account. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -70,9 +58,13 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
               </button>
               <button
                 onClick={handleDelete}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex justify-center items-center"
               >
-                Delete Account
+                {isDeleting ? (
+                  <Loader className=" animate-spin" />
+                ) : (
+                  "Delete Account"
+                )}
               </button>
             </div>
           </motion.div>
@@ -81,3 +73,4 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
     </AnimatePresence>
   );
 };
+export default DeleteAccountModal;
