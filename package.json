@@ -6,7 +6,7 @@
   "backend": "pnpm --prefix Server run dev",
   "frontend": "pnpm --prefix Client run dev",
   "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\"",
-  "installall": "pnpm --prefix Server install && pnpm --prefix Client install",
+  "installall": "pnpm install --prefix Server && pnpm install --prefix Client --production=false",
   "build": "pnpm run installall && pnpm --prefix Client run build",
   "start": "pnpm --prefix Server start"
 },
