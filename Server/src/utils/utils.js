@@ -16,13 +16,13 @@ const signToken = async (id, email, res) => {
   res.cookie("RefreshToken", refreshToken, {
     httpOnly: true,
     sameSite: "Lax",
-    /*     secure: "true", */
+    secure: "true",
     maxAge: 24 * 60 * 60 * 1000,
   });
   res.cookie("AccessToken", accessToken, {
     httpOnly: true,
     sameSite: "Lax",
-    /*     secure: "true", */
+    secure: "true",
     maxAge: 24 * 60 * 60 * 1000,
   });
   return { refreshToken, accessToken };
