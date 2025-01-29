@@ -29,9 +29,9 @@ export const signup = async (req, res) => {
         newUser = await prisma.user.create({
           data: {
             name: `${firstname} ${lastname}`,
-            avatar:
+          avatar:
               avatar ||
-             
+              "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
             email,
             theme: "system",
             status: "online",
@@ -55,6 +55,8 @@ export const signup = async (req, res) => {
       newUser = await prisma.user.create({
         data: {
           name: `${firstname} ${lastname}`,
+avatar:
+            "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
 
           email,
           theme: "system",
@@ -74,8 +76,7 @@ export const signup = async (req, res) => {
       data: {
         poster: newUser.name,
         userId: newUser.id,
-        profilePicture: newUser?.avatar,
-      },
+        profilePicture: newUser?.avatar,      },
     });
     // Generate JWT token after successful signup
     const token = await signToken(newUser.userId, newUser.email, res);
