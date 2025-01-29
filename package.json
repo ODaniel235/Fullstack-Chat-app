@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "Server/server.js",
   "scripts": {
+    "installconcurrently": "pnpm install concurrently",
     "backend": "pnpm --prefix Server run dev",
     "frontend": "pnpm --prefix Client run dev",
-    "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\""
+    "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\"",
+    "installall": "concurrently \"pnpm --prefix Client install\" \"pnpm --prefix Server install\"",
+    "build": "pnpm --prefix Client run build",
+    "start": "pnpm --prefix Server start"
   },
   "author": "Omole Oluwadamilare Daniel",
   "license": "ISC",

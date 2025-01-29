@@ -7,7 +7,7 @@
   "author": "Omole Oluwadamilare Daniel",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon server.js"
+    "start": "nodemon server.js"
   },
   "keywords": [],
   "license": "ISC",

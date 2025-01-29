@@ -28,7 +28,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET,
-}); /* 
+});
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../Client/dist")));
 
@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "../Client", "dist", "index.html"));
   });
 }
- */
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
