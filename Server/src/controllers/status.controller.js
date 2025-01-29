@@ -199,9 +199,22 @@ export const fetchStatuses = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}; /* 
-//Scheduling cron to auto delete statuses
-cron.schedule("* * * * * ", () => {
-  console.log("Running task every minute");
+};
+
+cron.schedule("* * * * *", async () => {
+  try {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const deletedStatuses = await prisma.statusData.deleteMany({
+      where: {
+        timestamp: {
+          lt: twentyFourHoursAgo, 
+        },
+      },
+    });
+
+    console.log("Deleted Statuses older than 24hrs==>", deletedStatuses);
+  } catch (error) {
+    console.log("Error deleting statuses:", error);
+  }
 });
- */
