@@ -6,7 +6,7 @@
   "type": "module",
   "author": "Omole Oluwadamilare Daniel",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "nodemon server.js"
   },
   "keywords": [],
@@ -25,5 +25,8 @@
     "nodemon": "^3.1.9",
     "prisma": "^6.1.0",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

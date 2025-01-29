@@ -4,9 +4,8 @@ import { generateNumbers, signToken } from "../utils/utils.js";
 import uploadBase64 from "../utils/cloudinary.js";
 import { getUserSocket, io } from "../socket/socket.js";
 import sendOTPByEmail from "../utils/sendMail.js";
-import { disconnect } from "mongoose";
 export const signup = async (req, res) => {
-  const { firstname, lastname, email, password, type, avatar, location } =
+  const { firstname, lastname, email, password, type } =
     req.body;
   try {
     // Validate required fields
