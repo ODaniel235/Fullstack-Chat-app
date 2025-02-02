@@ -2,14 +2,15 @@
   "name": "fullblown-chatapp",
   "version": "1.0.0",
   "main": "Server/server.js",
-"scripts": {
-  "backend": "pnpm --prefix Server run dev",
-  "frontend": "pnpm --prefix Client run dev",
-  "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\"",
-  "installall": "pnpm install --prefix Server && pnpm install --prefix Client --production=false",
-  "build": "pnpm run installall && pnpm --prefix Client run build",
-  "start": "pnpm --prefix Server start"
-},
+  "scripts": {
+    "backend": "pnpm --prefix Server run dev",
+    "frontend": "pnpm --prefix Client run dev",
+    "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\"",
+    "installall": "pnpm install --prefix Server && pnpm install --prefix Client --production=false",
+    "build": "pnpm run installall && pnpm --prefix Client run build",
+    "start": "pnpm --prefix Server start",
+    "pmig": "npx --prefix Server prisma migrate dev --name=${npm_config_name} --schema=Server/src/prisma/schema.prisma"
+  },
   "author": "Omole Oluwadamilare Daniel",
   "license": "ISC",
   "description": "",

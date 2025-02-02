@@ -30,14 +30,7 @@ export const GroupChat: React.FC = () => {
         currentUserId={userData.id}
       />
       <div className="p-4 border-t bg-white dark:bg-gray-800">
-        <MessageInput
-          type="group"
-          onSend={(message) => {
-            // TODO: Implement group message sending
-            console.log("Sending group message:", message);
-          }}
-          disableMediaMessages
-        />
+        <MessageInput type="group" participantId={groupId} />
       </div>
     </div>
   );

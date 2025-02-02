@@ -88,7 +88,7 @@ export const ChatList: React.FC = () => {
                 >
                   <div className="flex items-center space-x-3">
                     <Avatar
-                      avatar={otherParticipant.avatar}
+                      avatar={otherParticipant?.avatar}
                       alt="group"
                       name={otherParticipant.name}
                     />

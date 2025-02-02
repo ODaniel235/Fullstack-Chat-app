@@ -30,8 +30,10 @@ export const ChatWindow: React.FC = () => {
   const participantData =
     selectedChat?.participants?.filter((p) => p.id !== userData.id)[0] ||
     selectedChat;
+
   useEffect(() => {
-    if (!participantData) {
+    console.log(participantData);
+    if (!participantData || participantData.length < 1) {
       navigate("/chats");
       return;
     }
@@ -44,7 +46,6 @@ export const ChatWindow: React.FC = () => {
     }
     console.log(selectedChat);
     if (!selectedChat.id || !userData.id) return;
-    console.log("Selected====>", selectedChat);
     if (
       !selectedChat.lastMessage ||
       selectedChat?.lastMessage.senderId == userData.id
@@ -54,9 +55,8 @@ export const ChatWindow: React.FC = () => {
       id: selectedChat.id,
       userId: userData.id,
     });
-    console.log("Emmitted event");
   }, [selectedChat, messages]);
-  console.log(participantData);
+  
 
   const record = (type: string) => {
     setIsRecording({ value: true, type: type });
@@ -91,11 +91,14 @@ export const ChatWindow: React.FC = () => {
           }}
           className="flex items-center space-x-3"
         >
-          <Avatar
-            avatar={participantData.avatar}
-            alt="contact"
-            name={participantData.name}
-          />
+          {participantData && (
+            <Avatar
+              avatar={participantData?.avatar}
+              alt="contact"
+              name={participantData.name || "Unknown"}
+            />
+          )}
+
           <div>
             <h2 className="font-semibold">{participantData?.name}</h2>
             <p className="text-sm text-gray-500">{participantData?.status}</p>

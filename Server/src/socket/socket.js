@@ -19,6 +19,7 @@ const getUserSocket = (recipientId) => {
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId != "undefined") activeSocketMap[userId] = socket.id;
+  console.log("User connected", socket.id)
   io.emit("getOnlineUsers", Object.keys(activeSocketMap));
 
   /* Disconnect Function */

@@ -62,6 +62,7 @@ function App() {
       <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENTID}>
         <BrowserRouter>
           <Routes>
+            <Route path="*" element={<Navigate to={"/chats"} />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/" element={<MainLayout />}>

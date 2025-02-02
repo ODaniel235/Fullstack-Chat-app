@@ -128,7 +128,7 @@ export const Settings: React.FC = () => {
               >
                 <Avatar
                   alt="profile"
-                  avatar={userData.avatar}
+                  avatar={userData?.avatar}
                   name={userData.name}
                 />
                 <input

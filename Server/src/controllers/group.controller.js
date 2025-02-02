@@ -261,6 +261,7 @@ export const sendMessageFunction = async (req, res) => {
       .status(201)
       .json({ message: "Message sent successfully", group });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };

@@ -5,8 +5,7 @@ import uploadBase64 from "../utils/cloudinary.js";
 import { getUserSocket, io } from "../socket/socket.js";
 import sendOTPByEmail from "../utils/sendMail.js";
 export const signup = async (req, res) => {
- const { firstname, lastname, email, password, type, avatar, location } =
-    req.body;
+  const { firstname, lastname, email, password, type, avatar } = req.body;
   try {
     // Validate required fields
     if (!email || !lastname || !firstname)
@@ -29,13 +28,10 @@ export const signup = async (req, res) => {
         newUser = await prisma.user.create({
           data: {
             name: `${firstname} ${lastname}`,
-          avatar:
-              avatar ||
-              "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
+            avatar: avatar || null,
             email,
             theme: "system",
             status: "online",
-            location,
             privacySettings: {
               showOnlineStatus: true,
               readReceipts: true,
@@ -55,13 +51,9 @@ export const signup = async (req, res) => {
       newUser = await prisma.user.create({
         data: {
           name: `${firstname} ${lastname}`,
-avatar:
-            "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
-
           email,
           theme: "system",
           status: "online",
-          location,
           password: hashedPassword,
           privacySettings: {
             showOnlineStatus: true,
@@ -76,7 +68,8 @@ avatar:
       data: {
         poster: newUser.name,
         userId: newUser.id,
-        profilePicture: newUser?.avatar,      },
+        profilePicture: newUser?.avatar || null,
+      },
     });
     // Generate JWT token after successful signup
     const token = await signToken(newUser.userId, newUser.email, res);
@@ -95,8 +88,7 @@ avatar:
 };
 export const login = async (req, res) => {
   console.log(req.body);
-  const { email, password, type, firstname, lastname, avatar, location } =
-    req.body;
+  const { email, password, type, firstname, lastname, avatar } = req.body;
 
   try {
     if (!email)
@@ -121,13 +113,10 @@ export const login = async (req, res) => {
         const newUser = await prisma.user.create({
           data: {
             name: `${firstname} ${lastname}`,
-            avatar:
-              avatar ||
-              "https://res.cloudinary.com/dvtuuqtdb/image/upload/v1719960554/images/ryjefb8seoqbaizc7fc3.jpg",
+            avatar: avatar || null,
             email,
             theme: "system",
             status: "online",
-            location,
             privacySettings: {
               showOnlineStatus: true,
               readReceipts: true,
@@ -140,7 +129,7 @@ export const login = async (req, res) => {
           data: {
             poster: newUser.name,
             userId: newUser.id,
-            profilePicture: newUser.avatar,
+            profilePicture: newUser?.avatar || null,
           },
         });
         const token = await signToken(newUser.id, newUser.email, res);

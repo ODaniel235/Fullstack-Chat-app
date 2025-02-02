@@ -131,12 +131,13 @@ const useGroupStore = create<any>((set, get) => ({
       };
     });
   },
-  handleSendMessage: async (groupId, content, toast) => {
+  handleSendMessage: async (groupId, content, toast, wipeMessage) => {
     try {
       const response = await axiosInstance.post(`/group/new`, {
         groupId,
         content,
       });
+      wipeMessage();
     } catch (error) {
       console.log("Errorr===>>", error);
       if (error instanceof AxiosError) {

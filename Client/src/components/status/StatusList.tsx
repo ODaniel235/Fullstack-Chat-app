@@ -78,7 +78,7 @@ export const StatusList: React.FC<StatusListProps> = ({
               ) : (
                 <div className="relative">
                   <Avatar
-                    avatar={myStatuses.profilePicture}
+                    avatar={myStatuses?.profilePicture}
                     alt="group"
                     name={userData.name}
                   />

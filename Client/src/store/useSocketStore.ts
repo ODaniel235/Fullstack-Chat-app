@@ -15,9 +15,15 @@ const useSocketStore = create<any>((set, get) => ({
         useStatusStore.getState().setMyStatus(newProfile.statusData);
       });
       socket.on("newMessage", (newMessage: any) => {
-        console.log("New Message Socket ====>", newMessage);
         const selectedChat = useChatStore.getState().selectedChat;
+        console.log({
+          id: selectedChat.id,
+          convo: newMessage.conversation.id,
+        });
+        console.log("New Message Socket ====>", newMessage);
+
         console.log(newMessage);
+        console.log({ id: selectedChat.id, convo: newMessage.conversation.id });
         if (selectedChat?.id == newMessage.conversation.id) {
           useChatStore.getState().setMessages(newMessage.conversation.messages);
         }

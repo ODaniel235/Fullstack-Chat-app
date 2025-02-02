@@ -168,6 +168,7 @@ export const fetchConversations = async (req, res) => {
       },
       include: {
         participants: true, // Fetch all participants' data
+        messages: true,
       },
       orderBy: {
         updatedAt: "desc",

@@ -121,7 +121,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {isCreateMode ? "Group ID" : "Group ID or User Email"}
+                  {isCreateMode ? "Enter Group ID" : "Enter Group ID to Join"}
                 </label>
                 <input
                   type="text"
@@ -173,3 +173,5 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     </AnimatePresence>
   );
 };
+
+

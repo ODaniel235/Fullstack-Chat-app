@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import getBase64Size from "@/utils/sizeInBase";
 import React from "react";
 import useGroupStore from "./useGroupStore";
-const BASE_URL = "/";
+const BASE_URL = "http://localhost:8080/";
 const useAuthStore = create<any>((set, get) => ({
   isLoading: false,
   isCheckingAuth: true,

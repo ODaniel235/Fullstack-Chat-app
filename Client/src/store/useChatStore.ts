@@ -36,6 +36,7 @@ const useChatStore = create<any>((set, get) => ({
       const response = await axiosInstance.get("/message", {
         withCredentials: true,
       });
+      console.log(response);
       if (response.status == 200) {
         set({ chats: response.data.conversations });
       }
@@ -187,26 +188,25 @@ const useChatStore = create<any>((set, get) => ({
   ) => {
     e.preventDefault();
     try {
-        const response = await axiosInstance.get(`/auth/?email=${email}`);
-        console.log(response);
-        if (response.status == 200) {
-          const blocked = response.data.user.blockedUsers.some(
-            (id) => id == useAuthStore.getState().userData.id
-          );
-          console.log(blocked);
-          if (blocked) {
-            toast({
-              variant: "destructive",
-              title: "Oops",
-              description: "You have been blocked by this user lol",
-            });
-            onClose();
-            return;
-          }
-          set({ userSearch: response.data.user });
-          console.log("Search ===>", response.data.user);
-          navigate(`/user/${response.data.user.id}`);
-        
+      const response = await axiosInstance.get(`/auth/?email=${email}`);
+      console.log(response);
+      if (response.status == 200) {
+        const blocked = response.data.user.blockedUsers.some(
+          (id) => id == useAuthStore.getState().userData.id
+        );
+        console.log(blocked);
+        if (blocked) {
+          toast({
+            variant: "destructive",
+            title: "Oops",
+            description: "You have been blocked by this user lol",
+          });
+          onClose();
+          return;
+        }
+        set({ userSearch: response.data.user });
+        console.log("Search ===>", response.data.user);
+        navigate(`/user/${response.data.user.id}`);
       }
       // TODO: Implement group joining functionality
       onClose();

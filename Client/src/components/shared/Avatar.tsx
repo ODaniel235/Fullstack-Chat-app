@@ -26,15 +26,14 @@ const Avatar = ({
   name: string;
 }) => {
   const bgColor = generateColor(name);
-
-  return avatar ? (
+  return avatar !== null ? (
     <img src={avatar} alt={alt} className="w-20 h-20 rounded-full" />
   ) : (
     <div
       className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-medium"
       style={{ backgroundColor: bgColor }}
     >
-      {name.substring(0, 1)?.toUpperCase()}
+      {name && name.substring(0, 1)?.toUpperCase()}
     </div>
   );
 };

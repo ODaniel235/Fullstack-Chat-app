@@ -4,6 +4,7 @@ import analyzeText from "@/utils/chatModeration";
 import { useToast } from "@/hooks/use-toast";
 import useChatStore from "@/store/useChatStore";
 import { useLocation } from "react-router-dom";
+import useGroupStore from "@/store/useGroupStore";
 interface MessageInputProp {
   participantId: any;
   type?: string;
@@ -15,6 +16,7 @@ export const MessageInput: React.FC<MessageInputProp> = ({
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState<boolean>(false);
+  const { handleSendMessage } = useGroupStore();
   const { handleMessage } = useChatStore();
   const location = useLocation();
   // TODO: Implement message sending functionality
@@ -47,7 +49,8 @@ export const MessageInput: React.FC<MessageInputProp> = ({
         location.pathname
       );
     } else {
-      console.log("Sending message to GC");
+      console.log("Sending message to GC", participantId);
+      await handleSendMessage(participantId, message, toast, wipeMessage);
     }
     setIsSending(false);
   };
