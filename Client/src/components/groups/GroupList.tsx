@@ -9,8 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateGroupModal } from "./CreateGroupModal";
 import { formatDistanceToNow } from "@/utils/dateUtils";
 import Avatar from "../shared/Avatar";
+import { shortenText } from "@/lib/utils";
+import useAuthStore from "@/store/useAuthStore";
+import formatDate from "@/utils/formatDate";
 
 export const GroupList: React.FC = () => {
+  const { userData } = useAuthStore();
   const navigate = useNavigate();
   const { groups } = useGroupStore();
   const [isModalLoading, setIsModalLoading] = useState<boolean>(false);
@@ -38,21 +42,24 @@ export const GroupList: React.FC = () => {
     setIsModalLoading(false);
     setShowJoinModal(false);
   };
-  const renderLastMessage = (message: any) => {
-    switch (message.type) {
+
+  const renderLastMessage = (message: any, isRead: boolean) => {
+    const type = message.type || "text";
+console.log(userData)
+    console.log(message, isRead);
+
+    switch (type) {
       case "audio":
         return (
           <span
             className={`flex items-center ${
-              message.isRead
+              isRead
                 ? "text-gray-500"
                 : "text-gray-900 dark:text-white font-semibold"
             }`}
           >
             <Mic
-              className={`w-4 h-4 mr-1 ${
-                message.isRead ? "stroke-1" : "stroke-2"
-              }`}
+              className={`w-4 h-4 mr-1 ${isRead ? "stroke-1" : "stroke-2"}`}
             />
             Voice message
           </span>
@@ -61,15 +68,13 @@ export const GroupList: React.FC = () => {
         return (
           <span
             className={`flex items-center ${
-              message.isRead
+              isRead
                 ? "text-gray-500"
                 : "text-gray-900 dark:text-white font-semibold"
             }`}
           >
             <Video
-              className={`w-4 h-4 mr-1 ${
-                message.isRead ? "stroke-1" : "stroke-2"
-              }`}
+              className={`w-4 h-4 mr-1 ${isRead ? "stroke-1" : "stroke-2"}`}
             />
             Video message
           </span>
@@ -78,12 +83,13 @@ export const GroupList: React.FC = () => {
         return (
           <span
             className={
-              message.isRead
+              isRead
                 ? "text-gray-500"
                 : "text-gray-900 dark:text-white font-semibold"
             }
           >
-            {message.sender} - {message.content}
+            {message?.sender.id == userData?.id ? "Me" : message.sender.name} -{" "}
+            {shortenText(message.content)}
           </span>
         );
     }
@@ -98,44 +104,55 @@ export const GroupList: React.FC = () => {
       <div className="flex-1 overflow-y-auto">
         {groups && groups.length > 0 ? (
           <div className="divide-y dark:divide-gray-700">
-            {groups.map((group) => (
-              <motion.div
-                key={group.id}
-                onClick={() => navigate(`/groups/${group.id}`)}
-                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                whileHover={{ scale: 1.01 }}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <Avatar
-                      avatar={group.avatar}
-                      alt="group"
-                      name={group.name}
-                    />
-                    {group.unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {group.unreadCount}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-semibold">{group.name}</h3>
-                      <span className="text-sm text-gray-500">
-                        {formatDistanceToNow(group?.updatedAt)}
-                      </span>
+            {groups.map((group) => {
+              const unreadCount = group.messages.filter(
+                (message) => !message.isRead.includes(userData.id)
+              ).length;
+              console.log("Group ===>", group);
+              return (
+                <motion.div
+                  key={group.id}
+                  onClick={() => navigate(`/groups/${group.id}`)}
+                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Avatar
+                        avatar={group.avatar}
+                        alt="group"
+                        name={group.name}
+                      />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
                     </div>
-                    {group.lastMessage ? (
-                      <div className="text-sm">
-                        {renderLastMessage(group.lastMessage)}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold">{group.name}</h3>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(group?.updatedAt)}
+                        </span>
                       </div>
-                    ) : (
-                      <div className="text-sm">No message </div>
-                    )}
+                      {group.lastMessage ? (
+                        <div className="text-sm">
+                          {renderLastMessage(
+                            group.messages[group.messages.length - 1],
+                            group.messages[
+                              group.messages.length - 1
+                            ].isRead.includes(userData.id)
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm">No message </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         ) : (
           <div className="h-full flex items-center justify-center">

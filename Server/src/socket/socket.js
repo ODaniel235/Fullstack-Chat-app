@@ -16,12 +16,18 @@ const activeSocketMap = {};
 const getUserSocket = (recipientId) => {
   return activeSocketMap[recipientId];
 };
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId != "undefined") activeSocketMap[userId] = socket.id;
-  console.log("User connected", socket.id)
-  io.emit("getOnlineUsers", Object.keys(activeSocketMap));
+  console.log("User connected", socket.id);
 
+  io.emit("getOnlineUsers", Object.keys(activeSocketMap));
+  const rooms = await prisma.groups.findMany({
+    where: { members: { some: { id: userId } } },
+  });
+  rooms.forEach((room) => {
+    io.sockets.sockets.get(getUserSocket(userId))?.join(room.id);
+  });
   /* Disconnect Function */
 
   /*   socket.on("likedStatus", async (data) => {
@@ -154,13 +160,34 @@ io.on("connection", (socket) => {
       allConvos: otherUserConvos,
     });
   });
-
+  socket.on("markGroupMessageAsSeen", async (data) => {
+    const messagesToEdit = await prisma.groupMessage.updateMany({
+      where: { groupId: data.groupId, NOT: { isRead: { has: data.userId } } },
+      data: {
+        isRead: { push: userId },
+      },
+    });
+    const updatedGroup = await prisma.groups.findUnique({
+      where: { id: data.groupId },
+      include: {
+        members: true,
+        messages: {
+          include: {
+            sender: true,
+          },
+        },
+      },
+    });
+    io.to(getUserSocket(data.userId)).emit("newGroupMessage", {
+      group: updatedGroup,
+    });
+  });
   socket.on("disconnect", () => {
     console.log("User disconnected", userId);
     delete activeSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(activeSocketMap));
   });
-  socket.on("sendSignal", async (data) => {
+  /*   socket.on("sendSignal", async (data) => {
     const userSendingTo = await prisma.user.findFirst({
       where: { id: data.to },
     });
@@ -194,6 +221,6 @@ io.on("connection", (socket) => {
     } else {
       console.error("Recipient socket not found for ID:", to);
     }
-  });
+  }); */
 });
 export { app, server, io, getUserSocket };

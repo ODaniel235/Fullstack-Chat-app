@@ -38,7 +38,10 @@ export const createGroup = async (req, res) => {
         groups: { connect: { id: group.id } },
       },
     });
-    io.to(getUserSocket(userId)).emit("groupCreated", { groupData: group });
+    const userSocket = getUserSocket(userId);
+    io.to(userSocket).emit("groupCreated", { groupData: group });
+    io.sockets.sockets.get(userSocket)?.join(group.id);
+
     res.status(201).json({ message: "Group creation successful" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -76,7 +79,11 @@ export const addToGroup = async (req, res) => {
         },
         include: {
           members: true,
-          messages: true,
+          messages: {
+            include: {
+              sender: true,
+            },
+          },
         },
       }),
       prisma.user.update({
@@ -107,6 +114,7 @@ export const addToGroup = async (req, res) => {
     if (userSocket) {
       io.to(userSocket).emit("updatedProfile", { newProfile: updatedUser });
       io.to(userSocket).emit("joinedGroup", { group: groupJoined });
+      io.sockets.sockets.get(userSocket)?.join(group.id);
     }
     const sendTousers = groupJoined.members.forEach((member) => {
       io.to(getUserSocket(member.id)).emit("joinedGroup", {
@@ -143,6 +151,7 @@ export const fetchGroup = async (req, res) => {
     if (!allGroups) return res.status(200).json({ groups: [] });
     res.status(200).json({ groups: allGroups });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -207,8 +216,9 @@ export const leaveGroup = async (req, res) => {
     await group.members.forEach((member) => {
       io.to(getUserSocket(member.id)).emit("leftGroup", { group: group });
     });
-
-    io.to(getUserSocket(userId)).emit("exitGroup", { group: group });
+    const userSocket = getUserSocket(userId);
+    io.to(userSocket).emit("exitGroup", { group: group });
+    io.sockets.sockets.get(userSocket)?.leave(group.id);
     res.status(200).json({ message: "You have left the group" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -225,14 +235,17 @@ export const sendMessageFunction = async (req, res) => {
       });
     const newMessage = await prisma.groupMessage.create({
       data: {
-        groupId,
         sender: {
           connect: {
             id: userId,
           },
         },
+
         content,
         isRead: [userId],
+      },
+      include: {
+        sender: true,
       },
     });
     console.log("Created message", newMessage);
@@ -244,6 +257,7 @@ export const sendMessageFunction = async (req, res) => {
             id: newMessage.id,
           },
         },
+        updatedAt: new Date(),
       },
       include: {
         messages: {
@@ -251,12 +265,14 @@ export const sendMessageFunction = async (req, res) => {
             sender: true,
           },
         },
+
         members: true,
       },
     });
-    const allUsers = group.members.forEach((member) => {
+    /*  const allUsers = group.members.forEach((member) => {
       io.to(getUserSocket(member.id)).emit("newGroupMessage", { group });
-    });
+    }); */
+    io.to(group.id).emit("newGroupMessage", { group });
     return res
       .status(201)
       .json({ message: "Message sent successfully", group });

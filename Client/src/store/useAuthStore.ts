@@ -27,7 +27,7 @@ const useAuthStore = create<any>((set, get) => ({
     });
   },
 
-  signup: async (data: any, navigate: Function, toast: Function) => {
+  signup: async (data: any, navigate: Function, toast: Function, type) => {
     try {
       set({ isLoading: true });
       const response = await axiosInstance.post("/auth/signup", data);
@@ -37,8 +37,11 @@ const useAuthStore = create<any>((set, get) => ({
         set({ userData: response.data.data });
         get().connectSocket();
         set({ isCheckingAuth: true });
-
-        navigate("/chats");
+        if (type == "passwordless") {
+          navigate("/chats");
+        } else {
+          navigate("/signin");
+        }
       }
     } catch (error) {
       console.log(error);

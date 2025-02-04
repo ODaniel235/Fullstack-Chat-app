@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Message, Chat } from "../../types"; // Assuming `Message` and `Chat` types are already defined
 import VideoMessage from "../chat/VideoMessage";
 import AudioMessage from "../chat/AudioMessage";
-import MessageSkeleton from "../skeletons/MessageSkeleton";
 import formatDate from "@/utils/formatDate";
 
 interface GroupChatMessageListProps {
@@ -38,7 +37,8 @@ const GroupChatMessageList: React.FC<GroupChatMessageListProps> = ({
   }, [messages]);
 
   const renderMessage = (message: Message) => {
-    switch (message.type) {
+    let type = message.type || "text";
+    switch (type) {
       case "text":
         return <p>{message.content}</p>;
 
@@ -79,19 +79,13 @@ const GroupChatMessageList: React.FC<GroupChatMessageListProps> = ({
                   {/* Display sender's name if the message is not sent by the current user */}
                   {!isCurrentUser && (
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                      {message.sender}
+                      {message.sender.name}
                     </div>
                   )}
                   {renderMessage(message)}
                   <div className="text-xs mt-1 opacity-70">
                     {formatDate(message.createdAt)}
                   </div>
-                  {/* Show "seen" for the last message if it's read */}
-                  {isLastMessage && message.isRead && isCurrentUser && (
-                    <div className="text-right text-xs text-white mt-1">
-                      Seen
-                    </div>
-                  )}
                 </div>
               </motion.div>
             );

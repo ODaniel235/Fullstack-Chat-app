@@ -54,7 +54,7 @@ export const SignUp: React.FC = () => {
           }
         );
         console.log("Decoded token info ==>", resp);
-        signup(
+        await signup(
           {
             firstname: resp.data.given_name,
             lastname: resp.data.family_name,

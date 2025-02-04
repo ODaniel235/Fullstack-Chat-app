@@ -84,6 +84,10 @@ const useSocketStore = create<any>((set, get) => ({
         console.log("Exit data====>", data.group);
         useGroupStore.getState().handleLeaveGroup(data.group.id);
       });
+      socket.on("newGroupMessage", (data) => {
+        console.log(data);
+        useGroupStore.getState().handleNewGroupMessage(data.group);
+      });
     }
   },
 }));

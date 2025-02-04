@@ -157,5 +157,13 @@ const useGroupStore = create<any>((set, get) => ({
       }
     }
   },
+  handleNewGroupMessage: (groupData) => {
+    console.log(groupData);
+    set((state) => ({
+      groups: state.groups.map((group) =>
+        group.id === groupData.id ? { ...group, ...groupData } : group
+      ),
+    }));
+  },
 }));
 export default useGroupStore;
