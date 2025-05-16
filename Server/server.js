@@ -37,7 +37,7 @@ Cron.schedule(
       console.log(
         `[Keep-Alive] Visited ${WEBSITE_URL} and it is up and running`
       );
-      logger.info(`Time took to ping ${Date.now() - startTime}ms`);
+      console.log(`Time took to ping ${Date.now() - startTime}ms`);
     } catch (error) {
       console.log(error);
       console.error(`[Fatal-Error] : [Keep-Alive] Failed: ${error.message}`);
